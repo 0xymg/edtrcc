@@ -820,10 +820,10 @@ export function Notepad() {
                           onContextMenu={(e) => handleContextMenu(e, tab.id)}
                           className={cn(
                             "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                            tab.id === activeTabId
-                              ? "bg-secondary text-foreground"
-                              : "text-foreground hover:bg-accent",
-                            dragOverTab === tab.id && "border-b-2 border-primary"
+                  tab.id === activeTabId
+                    ? "bg-secondary text-foreground"
+                    : "text-foreground hover:bg-accent",
+                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                           )}
                         >
                     <FileText className="h-4 w-4 shrink-0" />
@@ -843,10 +843,10 @@ export function Notepad() {
                           onDragEnter={() => handleDragEnterFolder(folder.id)}
                           onDragLeave={handleDragLeaveFolder}
                           onDrop={() => handleDropOnFolder(folder.id)}
-                          className={cn(
-                            "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
-                            "text-foreground hover:bg-accent",
-                            dragOverFolder === folder.id && "bg-primary/20 ring-2 ring-primary"
+                className={cn(
+                  "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
+                  "text-foreground hover:bg-accent",
+                  dragOverFolder === folder.id && "bg-muted ring-2 ring-border"
                           )}
                         >
                           <button
@@ -909,10 +909,10 @@ export function Notepad() {
                                 onContextMenu={(e) => handleContextMenu(e, tab.id)}
                                 className={cn(
                                   "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                                  tab.id === activeTabId
-                                    ? "bg-secondary text-foreground"
-                                    : "text-foreground hover:bg-accent",
-                                  dragOverTab === tab.id && "border-b-2 border-primary"
+                  tab.id === activeTabId
+                    ? "bg-secondary text-foreground"
+                    : "text-foreground hover:bg-accent",
+                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                                 )}
                               >
                   <FileText className="h-4 w-4 shrink-0" />
