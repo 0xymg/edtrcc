@@ -458,7 +458,35 @@ export function Notepad() {
     }
   }, [])
 
+  // Get comment syntax for each language
+  const getCommentSyntax = useCallback((language: string): { start: string; end?: string } => {
+    const commentMap: Record<string, { start: string; end?: string }> = {
+      javascript: { start: "// " },
+      jsx: { start: "// " },
+      typescript: { start: "// " },
+      tsx: { start: "// " },
+      python: { start: "# " },
+      bash: { start: "# " },
+      ruby: { start: "# " },
+      yaml: { start: "# " },
+      html: { start: "<!-- ", end: " -->" },
+      xml: { start: "<!-- ", end: " -->" },
+      css: { start: "/* ", end: " */" },
+      sql: { start: "-- " },
+      java: { start: "// " },
+      cpp: { start: "// " },
+      csharp: { start: "// " },
+      go: { start: "// " },
+      rust: { start: "// " },
+      php: { start: "// " },
+      swift: { start: "// " },
+      kotlin: { start: "// " },
+    }
+    return commentMap[language] || { start: "// " }
+  }, [])
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Tab key for indentation
     if (e.key === "Tab") {
       e.preventDefault()
       const textarea = e.currentTarget
@@ -475,7 +503,82 @@ export function Notepad() {
         textarea.selectionStart = textarea.selectionEnd = start + 2
       }, 0)
     }
-  }, [activeTab?.content, updateContent])
+    
+    // Cmd/Ctrl + / for toggle comment
+    if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+      e.preventDefault()
+      const textarea = e.currentTarget
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const content = activeTab?.content || ""
+      const language = activeTab?.language || "plaintext"
+      
+      if (language === "plaintext") return
+      
+      const { start: commentStart, end: commentEnd } = getCommentSyntax(language)
+      
+      // Find the start and end of the current line(s)
+      const lineStart = content.lastIndexOf("\n", start - 1) + 1
+      const lineEnd = content.indexOf("\n", end)
+      const actualLineEnd = lineEnd === -1 ? content.length : lineEnd
+      
+      // Get selected lines
+      const selectedText = content.substring(lineStart, actualLineEnd)
+      const lines = selectedText.split("\n")
+      
+      // Check if all lines are already commented
+      const allCommented = lines.every(line => {
+        const trimmed = line.trimStart()
+        if (commentEnd) {
+          return trimmed.startsWith(commentStart.trim()) && line.trimEnd().endsWith(commentEnd.trim())
+        }
+        return trimmed.startsWith(commentStart.trim())
+      })
+      
+      // Toggle comments
+      const newLines = lines.map(line => {
+        if (allCommented) {
+          // Remove comment
+          let newLine = line
+          const leadingSpaces = line.match(/^\s*/)?.[0] || ""
+          const trimmed = line.trimStart()
+          
+          if (commentEnd) {
+            if (trimmed.startsWith(commentStart.trim())) {
+              newLine = trimmed.substring(commentStart.trim().length)
+            }
+            if (newLine.trimEnd().endsWith(commentEnd.trim())) {
+              newLine = newLine.substring(0, newLine.lastIndexOf(commentEnd.trim()))
+            }
+            return leadingSpaces + newLine.trim()
+          } else {
+            if (trimmed.startsWith(commentStart.trim())) {
+              return leadingSpaces + trimmed.substring(commentStart.length)
+            }
+          }
+          return line
+        } else {
+          // Add comment
+          if (line.trim() === "") return line
+          const leadingSpaces = line.match(/^\s*/)?.[0] || ""
+          const trimmed = line.trimStart()
+          if (commentEnd) {
+            return leadingSpaces + commentStart + trimmed + commentEnd
+          }
+          return leadingSpaces + commentStart + trimmed
+        }
+      })
+      
+      const newContent = content.substring(0, lineStart) + newLines.join("\n") + content.substring(actualLineEnd)
+      updateContent(newContent)
+      
+      // Restore cursor position
+      setTimeout(() => {
+        textarea.selectionStart = lineStart
+        textarea.selectionEnd = lineStart + newLines.join("\n").length
+      }, 0)
+    }
+  }, [activeTab?.content, activeTab?.language, updateContent, getCommentSyntax])
 
   const formatCode = useCallback(async () => {
     if (!activeTab?.content || activeTab.language === "plaintext") {
@@ -621,7 +724,7 @@ export function Notepad() {
                   : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
-              <FileText className="h-4 w-4 shrink-0 text-primary" />
+                  <FileText className="h-4 w-4 shrink-0" />
               {editingTabId === tab.id ? (
                 <input
                   autoFocus
@@ -634,11 +737,11 @@ export function Notepad() {
                 />
               ) : (
                 <span className="max-w-32 truncate">{tab.name}</span>
-              )}
-              {tab.isModified && (
-                <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-              )}
-              <button
+                  )}
+                  {tab.isModified && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                  )}
+                  <button
                 onClick={(e) => closeTab(tab.id, e)}
                 className="ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
                 aria-label={`Close ${tab.name}`}
@@ -717,17 +820,17 @@ export function Notepad() {
                           onContextMenu={(e) => handleContextMenu(e, tab.id)}
                           className={cn(
                             "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                            tab.id === activeTabId
-                              ? "bg-secondary text-foreground"
-                              : "text-foreground hover:bg-accent",
-                            dragOverTab === tab.id && "border-b-2 border-primary"
+                  tab.id === activeTabId
+                    ? "bg-secondary text-foreground"
+                    : "text-foreground hover:bg-accent",
+                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                           )}
                         >
-                          <FileText className="h-4 w-4 shrink-0" />
-                          <span className="truncate flex-1">{tab.name}</span>
-                          {tab.isModified && (
-                            <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" />
-                          )}
+                    <FileText className="h-4 w-4 shrink-0" />
+                    <span className="truncate flex-1">{tab.name}</span>
+                    {tab.isModified && (
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                    )}
                         </button>
                       ))}
                     </div>
@@ -740,10 +843,10 @@ export function Notepad() {
                           onDragEnter={() => handleDragEnterFolder(folder.id)}
                           onDragLeave={handleDragLeaveFolder}
                           onDrop={() => handleDropOnFolder(folder.id)}
-                          className={cn(
-                            "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
-                            "text-foreground hover:bg-accent",
-                            dragOverFolder === folder.id && "bg-primary/20 ring-2 ring-primary"
+                className={cn(
+                  "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
+                  "text-foreground hover:bg-accent",
+                  dragOverFolder === folder.id && "bg-muted ring-2 ring-border"
                           )}
                         >
                           <button
@@ -806,17 +909,17 @@ export function Notepad() {
                                 onContextMenu={(e) => handleContextMenu(e, tab.id)}
                                 className={cn(
                                   "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                                  tab.id === activeTabId
-                                    ? "bg-secondary text-foreground"
-                                    : "text-foreground hover:bg-accent",
-                                  dragOverTab === tab.id && "border-b-2 border-primary"
+                  tab.id === activeTabId
+                    ? "bg-secondary text-foreground"
+                    : "text-foreground hover:bg-accent",
+                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                                 )}
                               >
-                                <FileText className="h-4 w-4 shrink-0" />
-                                <span className="truncate flex-1">{tab.name}</span>
-                                {tab.isModified && (
-                                  <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" />
-                                )}
+                  <FileText className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">{tab.name}</span>
+                  {tab.isModified && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                  )}
                               </button>
                             ))}
                           </div>
