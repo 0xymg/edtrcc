@@ -1,17 +1,8 @@
 "use client"
 
 import React from "react"
-
 import { useState, useCallback, useEffect, useRef } from "react"
 import { X, Plus, FileText, Moon, Sun, Save, Menu, ChevronDown, ChevronRight, Folder, FolderOpen, Edit2, Trash2, Check, Wand2 } from "lucide-react"
-import * as prettier from "prettier/standalone"
-import prettierPluginBabel from "prettier/plugins/babel"
-import prettierPluginEstree from "prettier/plugins/estree"
-import prettierPluginHtml from "prettier/plugins/html"
-import prettierPluginCss from "prettier/plugins/postcss"
-import prettierPluginMarkdown from "prettier/plugins/markdown"
-import prettierPluginYaml from "prettier/plugins/yaml"
-import prettierPluginTypescript from "prettier/plugins/typescript"
 import { cn } from "@/lib/utils"
 import { Kbd } from "@/components/ui/kbd"
 import hljs from "highlight.js/lib/core"
@@ -580,7 +571,7 @@ export function Notepad() {
     }
   }, [activeTab?.content, activeTab?.language, updateContent, getCommentSyntax])
 
-  const formatCode = useCallback(async () => {
+  const formatCode = useCallback(() => {
     if (!activeTab?.content || activeTab.language === "plaintext") {
       return
     }
@@ -588,40 +579,29 @@ export function Notepad() {
     setIsFormatting(true)
     setFormatError(null)
 
-    // Map language to Prettier parser
-    const parserMap: Record<string, { parser: string; plugins: prettier.Plugin[] }> = {
-      javascript: { parser: "babel", plugins: [prettierPluginBabel, prettierPluginEstree] },
-      jsx: { parser: "babel", plugins: [prettierPluginBabel, prettierPluginEstree] },
-      typescript: { parser: "typescript", plugins: [prettierPluginTypescript, prettierPluginEstree] },
-      tsx: { parser: "typescript", plugins: [prettierPluginTypescript, prettierPluginEstree] },
-      html: { parser: "html", plugins: [prettierPluginHtml] },
-      css: { parser: "css", plugins: [prettierPluginCss] },
-      json: { parser: "json", plugins: [prettierPluginBabel, prettierPluginEstree] },
-      markdown: { parser: "markdown", plugins: [prettierPluginMarkdown] },
-      yaml: { parser: "yaml", plugins: [prettierPluginYaml] },
-      xml: { parser: "html", plugins: [prettierPluginHtml] },
-    }
-
-    const config = parserMap[activeTab.language]
-    
-    if (!config) {
-      setFormatError(`Formatting not supported for ${LANGUAGES.find(l => l.id === activeTab.language)?.name || activeTab.language}`)
-      setIsFormatting(false)
-      setTimeout(() => setFormatError(null), 3000)
-      return
-    }
-
     try {
-      const formatted = await prettier.format(activeTab.content, {
-        parser: config.parser,
-        plugins: config.plugins,
-        tabWidth: 2,
-        useTabs: false,
-        semi: true,
-        singleQuote: false,
-        trailingComma: "es5",
-        printWidth: 80,
-      })
+      let formatted = activeTab.content
+
+      if (activeTab.language === "json") {
+        // JSON formatting
+        try {
+          const parsed = JSON.parse(activeTab.content)
+          formatted = JSON.stringify(parsed, null, 2)
+        } catch {
+          setFormatError("Invalid JSON")
+          setIsFormatting(false)
+          setTimeout(() => setFormatError(null), 3000)
+          return
+        }
+      } else {
+        // Basic formatting for other languages
+        formatted = formatted
+          .split('\n')
+          .map(line => line.trimEnd())
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim()
+      }
 
       setTabs(prev => prev.map(tab =>
         tab.id === activeTabId
