@@ -724,7 +724,7 @@ export function Notepad() {
                   : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
-              <FileText className="h-4 w-4 shrink-0 text-primary" />
+                  <FileText className="h-4 w-4 shrink-0" />
               {editingTabId === tab.id ? (
                 <input
                   autoFocus
