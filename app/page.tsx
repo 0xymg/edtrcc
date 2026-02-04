@@ -36,9 +36,9 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 border-b border-muted bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-sm bg-foreground text-background">
+            <Link href="/" className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-sm bg-foreground text-background">
               <img src="/icon.svg" alt="EDTR Logo" className="h-full w-full object-cover" />
-            </div>
+            </Link>
           </div>
           <div className="hidden items-center gap-8 md:flex">
 
@@ -57,24 +57,24 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
               {/* Left Column: Headlines */}
-              <div className="lg:col-span-5 space-y-8 text-left">
+              <div className="lg:col-span-5 space-y-8 text-center lg:text-left">
                 <Badge variant="outline" className="rounded-none border-foreground/20 py-1 px-4 text-[10px] font-bold uppercase tracking-[0.2em]">
                   ONLINE NOTEPAD++
                 </Badge>
-                <h1 className="text-4xl font-black tracking-tighter uppercase sm:text-5xl lg:text-6xl animate-in fade-in slide-in-from-left-4 duration-1000">
+                <h1 className="text-4xl font-black tracking-tighter uppercase sm:text-5xl lg:text-7xl animate-in fade-in slide-in-from-left-4 duration-1000">
                   Simple. <br />
                   <span className="text-muted-foreground">Powerful.</span>
                 </h1>
-                <p className="max-w-md text-lg text-muted-foreground sm:text-xl font-medium animate-in fade-in slide-in-from-left-5 duration-1000 delay-200">
+                <p className="mx-auto lg:mx-0 max-w-md text-lg text-muted-foreground sm:text-xl font-medium animate-in fade-in slide-in-from-left-5 duration-1000 delay-200">
                   The legendary efficiency of Notepad++, available in your browser.
                 </p>
-                <div className="flex flex-col gap-4 sm:flex-row animate-in fade-in slide-in-from-left-6 duration-1000 delay-300">
-                  <Link href="/notepad">
-                    <Button size="lg" className="h-14 rounded-none px-8 text-md font-black uppercase tracking-wide bg-foreground text-background hover:bg-muted-foreground">
+                <div className="flex flex-col gap-4 sm:flex-row justify-center lg:justify-start animate-in fade-in slide-in-from-left-6 duration-1000 delay-300">
+                  <Link href="/notepad" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full h-14 rounded-none px-8 text-md font-black uppercase tracking-wide bg-foreground text-background hover:bg-muted-foreground">
                       GO TO APP
                     </Button>
                   </Link>
-                  <Button variant="outline" size="lg" className="h-14 rounded-none px-8 text-md font-bold uppercase tracking-wide border-2 border-foreground hover:bg-foreground hover:text-background">
+                  <Button variant="outline" size="lg" className="h-14 rounded-none px-8 text-md font-bold uppercase tracking-wide border-2 border-foreground hover:bg-foreground hover:text-background w-full sm:w-auto">
                     GITHUB <Github className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
@@ -83,8 +83,8 @@ export default function LandingPage() {
               {/* Center Column: The Demo Card */}
               <div className="lg:col-span-7 relative">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-muted/20 to-transparent blur-3xl" />
-                <Card className="relative rounded-none border-2 border-foreground/10 bg-background shadow-[30px_30px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden animate-in zoom-in-95 duration-1000 delay-200">
-                  <div className="h-[500px] w-full border-t">
+                <Card className="relative rounded-none border-2 border-foreground/10 bg-background shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)] lg:shadow-[30px_30px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden animate-in zoom-in-95 duration-1000 delay-200">
+                  <div className="h-[350px] sm:h-[450px] lg:h-[550px] w-full border-t">
                     <Notepad />
                   </div>
                 </Card>
@@ -158,12 +158,12 @@ export default function LandingPage() {
         <section id="how-it-works" className="py-20 lg:py-32">
           <div className="container mx-auto max-w-4xl px-4">
             <div className="space-y-16">
-              <div className="border-l-4 border-foreground pl-8">
-                <h2 className="text-5xl font-black tracking-tighter uppercase italic mb-8">Technical Overview</h2>
-                <p className="text-xl text-muted-foreground leading-relaxed font-medium">
+              <div className="border-l-4 border-foreground pl-6 lg:pl-8 text-center lg:text-left">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter uppercase italic mb-8">Technical Overview</h2>
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed font-medium text-justify">
                   EDTR is a <strong>free online notepad</strong> and browser-exclusive code environment. <strong>Inspired by the functional purity of Notepad++</strong>, we prioritize raw execution over visual bloat, providing a seamless workspace for your ideas, to-do lists, and technical documentation.
                 </p>
-                <p className="text-xl text-muted-foreground leading-relaxed mt-4 font-medium">
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed mt-4 font-medium text-justify">
                   Unlike traditional word processors, EDTR focuses on <strong>high-performance plain text</strong>. We leverage HTML5 for persistent draft cycles that stay on your device—private, secure, and always accessible.
                 </p>
               </div>
@@ -216,7 +216,7 @@ export default function LandingPage() {
                 Open Source & <br />
                 <span className="opacity-50">Contributions</span>
               </h2>
-              <p className="text-lg opacity-80 font-medium leading-relaxed text-white">
+              <p className="text-lg opacity-80 font-medium leading-relaxed text-white text-justify">
                 EDTR is a <strong>100% open source</strong> utility built for the global developer community. We are open to all contributions as long as they maintain the application&apos;s <strong>purity, simplicity, and raw performance</strong>.
               </p>
               <Button size="lg" variant="secondary" className="h-14 rounded-none px-10 text-md font-black uppercase tracking-widest bg-white text-black hover:bg-zinc-200 transition-all">
@@ -292,7 +292,7 @@ export default function LandingPage() {
             </div>
 
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              © {new Date().getFullYear()} EDTR.CC / BUILT BY YMG.DIGITAL
+              © {new Date().getFullYear()} EDTR.CC
             </p>
 
 
