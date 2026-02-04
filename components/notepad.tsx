@@ -458,7 +458,35 @@ export function Notepad() {
     }
   }, [])
 
+  // Get comment syntax for each language
+  const getCommentSyntax = useCallback((language: string): { start: string; end?: string } => {
+    const commentMap: Record<string, { start: string; end?: string }> = {
+      javascript: { start: "// " },
+      jsx: { start: "// " },
+      typescript: { start: "// " },
+      tsx: { start: "// " },
+      python: { start: "# " },
+      bash: { start: "# " },
+      ruby: { start: "# " },
+      yaml: { start: "# " },
+      html: { start: "<!-- ", end: " -->" },
+      xml: { start: "<!-- ", end: " -->" },
+      css: { start: "/* ", end: " */" },
+      sql: { start: "-- " },
+      java: { start: "// " },
+      cpp: { start: "// " },
+      csharp: { start: "// " },
+      go: { start: "// " },
+      rust: { start: "// " },
+      php: { start: "// " },
+      swift: { start: "// " },
+      kotlin: { start: "// " },
+    }
+    return commentMap[language] || { start: "// " }
+  }, [])
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Tab key for indentation
     if (e.key === "Tab") {
       e.preventDefault()
       const textarea = e.currentTarget
@@ -475,7 +503,82 @@ export function Notepad() {
         textarea.selectionStart = textarea.selectionEnd = start + 2
       }, 0)
     }
-  }, [activeTab?.content, updateContent])
+    
+    // Cmd/Ctrl + / for toggle comment
+    if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+      e.preventDefault()
+      const textarea = e.currentTarget
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const content = activeTab?.content || ""
+      const language = activeTab?.language || "plaintext"
+      
+      if (language === "plaintext") return
+      
+      const { start: commentStart, end: commentEnd } = getCommentSyntax(language)
+      
+      // Find the start and end of the current line(s)
+      const lineStart = content.lastIndexOf("\n", start - 1) + 1
+      const lineEnd = content.indexOf("\n", end)
+      const actualLineEnd = lineEnd === -1 ? content.length : lineEnd
+      
+      // Get selected lines
+      const selectedText = content.substring(lineStart, actualLineEnd)
+      const lines = selectedText.split("\n")
+      
+      // Check if all lines are already commented
+      const allCommented = lines.every(line => {
+        const trimmed = line.trimStart()
+        if (commentEnd) {
+          return trimmed.startsWith(commentStart.trim()) && line.trimEnd().endsWith(commentEnd.trim())
+        }
+        return trimmed.startsWith(commentStart.trim())
+      })
+      
+      // Toggle comments
+      const newLines = lines.map(line => {
+        if (allCommented) {
+          // Remove comment
+          let newLine = line
+          const leadingSpaces = line.match(/^\s*/)?.[0] || ""
+          const trimmed = line.trimStart()
+          
+          if (commentEnd) {
+            if (trimmed.startsWith(commentStart.trim())) {
+              newLine = trimmed.substring(commentStart.trim().length)
+            }
+            if (newLine.trimEnd().endsWith(commentEnd.trim())) {
+              newLine = newLine.substring(0, newLine.lastIndexOf(commentEnd.trim()))
+            }
+            return leadingSpaces + newLine.trim()
+          } else {
+            if (trimmed.startsWith(commentStart.trim())) {
+              return leadingSpaces + trimmed.substring(commentStart.length)
+            }
+          }
+          return line
+        } else {
+          // Add comment
+          if (line.trim() === "") return line
+          const leadingSpaces = line.match(/^\s*/)?.[0] || ""
+          const trimmed = line.trimStart()
+          if (commentEnd) {
+            return leadingSpaces + commentStart + trimmed + commentEnd
+          }
+          return leadingSpaces + commentStart + trimmed
+        }
+      })
+      
+      const newContent = content.substring(0, lineStart) + newLines.join("\n") + content.substring(actualLineEnd)
+      updateContent(newContent)
+      
+      // Restore cursor position
+      setTimeout(() => {
+        textarea.selectionStart = lineStart
+        textarea.selectionEnd = lineStart + newLines.join("\n").length
+      }, 0)
+    }
+  }, [activeTab?.content, activeTab?.language, updateContent, getCommentSyntax])
 
   const formatCode = useCallback(async () => {
     if (!activeTab?.content || activeTab.language === "plaintext") {
