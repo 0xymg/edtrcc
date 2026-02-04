@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useState, useCallback, useEffect, useRef } from "react"
-import { X, Plus, FileText, Moon, Sun, Save, Menu, ChevronDown, ChevronRight, Folder, FolderOpen, Edit2, Trash2, Check, Wand2 } from "lucide-react"
+import { X, Plus, FileText, Moon, Sun, Save, Menu, ChevronDown, ChevronRight, Folder, FolderOpen, Edit2, Trash2, Check, Wand2, Printer } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Kbd } from "@/components/ui/kbd"
 import hljs from "highlight.js/lib/core"
@@ -131,8 +131,18 @@ export function Notepad() {
   }, [])
 
   useEffect(() => {
-    // Load tabs from localStorage on mount
+    // Load tabs and folders from localStorage on mount
     const savedTabs = localStorage.getItem("notepad-tabs")
+    const savedFolders = localStorage.getItem("notepad-folders")
+
+    if (savedFolders) {
+      try {
+        setFolders(JSON.parse(savedFolders))
+      } catch (e) {
+        console.error("Failed to load folders from localStorage")
+      }
+    }
+
     if (savedTabs) {
       try {
         const parsed = JSON.parse(savedTabs)
@@ -140,7 +150,8 @@ export function Notepad() {
           // Ensure all tabs have a language property
           const tabsWithLanguage = parsed.map((tab: Tab) => ({
             ...tab,
-            language: tab.language || "plaintext"
+            language: tab.language || "plaintext",
+            isModified: false // Reset modified status on load
           }))
           setTabs(tabsWithLanguage)
           setActiveTabId(tabsWithLanguage[0].id)
@@ -153,7 +164,7 @@ export function Notepad() {
         console.error("Failed to load tabs from localStorage")
       }
     }
-    
+
     // Focus textarea on mount
     setTimeout(() => {
       textareaRef.current?.focus()
@@ -164,6 +175,7 @@ export function Notepad() {
     setSaveStatus("saving")
     try {
       localStorage.setItem("notepad-tabs", JSON.stringify(tabs))
+      localStorage.setItem("notepad-folders", JSON.stringify(folders))
       setTabs(prev => prev.map(tab =>
         tab.id === activeTabId
           ? { ...tab, isModified: false }
@@ -174,7 +186,19 @@ export function Notepad() {
     } catch (e) {
       console.error("Failed to save to localStorage", e)
     }
-  }, [tabs, activeTabId])
+  }, [tabs, folders, activeTabId])
+
+  // Autosave effect - save every 5 seconds if there are unsaved changes
+  useEffect(() => {
+    const hasUnsavedChanges = tabs.some(tab => tab.isModified)
+    if (!hasUnsavedChanges) return
+
+    const timer = setTimeout(() => {
+      saveToLocalStorage()
+    }, 5000)
+
+    return () => clearTimeout(timer)
+  }, [tabs, saveToLocalStorage])
 
   const updateTheme = useCallback((newTheme: "light" | "dark") => {
     if (newTheme === "dark") {
@@ -214,7 +238,7 @@ export function Notepad() {
   const updateContent = useCallback((content: string) => {
     setTabs(prev => prev.map(tab => {
       if (tab.id !== activeTabId) return tab
-      
+
       // Auto-name file based on first word if still "Untitled-X"
       // Only rename when there's a space/newline (meaning first word is complete)
       let newName = tab.name
@@ -231,7 +255,7 @@ export function Notepad() {
           }
         }
       }
-      
+
       return { ...tab, content, isModified: true, name: newName }
     }))
   }, [activeTabId])
@@ -354,22 +378,22 @@ export function Notepad() {
       setTabs(prev => {
         const draggedIndex = prev.findIndex(t => t.id === draggedTab)
         const targetIndex = prev.findIndex(t => t.id === targetTabId)
-        
+
         console.log("[v0] Dragged index:", draggedIndex, "Target index:", targetIndex)
-        
+
         if (draggedIndex === -1 || targetIndex === -1) return prev
-        
+
         const newTabs = [...prev]
         const [draggedItem] = newTabs.splice(draggedIndex, 1)
         const targetFolderId = prev[targetIndex].folderId
-        
+
         console.log("[v0] Moving to folder:", targetFolderId)
-        
+
         // Insert at target position with the same folderId as target
         newTabs.splice(targetIndex, 0, { ...draggedItem, folderId: targetFolderId })
-        
+
         console.log("[v0] New tabs order:", newTabs.map(t => t.name))
-        
+
         return newTabs
       })
     }
@@ -484,17 +508,17 @@ export function Notepad() {
       const start = textarea.selectionStart
       const end = textarea.selectionEnd
       const content = activeTab?.content || ""
-      
+
       // Insert 2 spaces at cursor position
       const newContent = content.substring(0, start) + "  " + content.substring(end)
       updateContent(newContent)
-      
+
       // Move cursor after the inserted spaces
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + 2
       }, 0)
     }
-    
+
     // Cmd/Ctrl + / for toggle comment
     if ((e.metaKey || e.ctrlKey) && e.key === "/") {
       e.preventDefault()
@@ -503,20 +527,20 @@ export function Notepad() {
       const end = textarea.selectionEnd
       const content = activeTab?.content || ""
       const language = activeTab?.language || "plaintext"
-      
+
       if (language === "plaintext") return
-      
+
       const { start: commentStart, end: commentEnd } = getCommentSyntax(language)
-      
+
       // Find the start and end of the current line(s)
       const lineStart = content.lastIndexOf("\n", start - 1) + 1
       const lineEnd = content.indexOf("\n", end)
       const actualLineEnd = lineEnd === -1 ? content.length : lineEnd
-      
+
       // Get selected lines
       const selectedText = content.substring(lineStart, actualLineEnd)
       const lines = selectedText.split("\n")
-      
+
       // Check if all lines are already commented
       const allCommented = lines.every(line => {
         const trimmed = line.trimStart()
@@ -525,7 +549,7 @@ export function Notepad() {
         }
         return trimmed.startsWith(commentStart.trim())
       })
-      
+
       // Toggle comments
       const newLines = lines.map(line => {
         if (allCommented) {
@@ -533,7 +557,7 @@ export function Notepad() {
           let newLine = line
           const leadingSpaces = line.match(/^\s*/)?.[0] || ""
           const trimmed = line.trimStart()
-          
+
           if (commentEnd) {
             if (trimmed.startsWith(commentStart.trim())) {
               newLine = trimmed.substring(commentStart.trim().length)
@@ -559,10 +583,10 @@ export function Notepad() {
           return leadingSpaces + commentStart + trimmed
         }
       })
-      
+
       const newContent = content.substring(0, lineStart) + newLines.join("\n") + content.substring(actualLineEnd)
       updateContent(newContent)
-      
+
       // Restore cursor position
       setTimeout(() => {
         textarea.selectionStart = lineStart
@@ -687,8 +711,32 @@ export function Notepad() {
     return () => window.removeEventListener("click", handleClick)
   }, [closeContextMenu, languageMenuOpen])
 
+  const getWordCount = useCallback((content: string) => {
+    if (!content.trim()) return 0
+    return content.trim().split(/\s+/).length
+  }, [])
+
+  const handlePrint = useCallback(() => {
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>EDTR++ - ${activeTab?.name || 'Untitled'}</title>
+            <style>
+              body { font-family: monospace; white-space: pre-wrap; padding: 20px; }
+            </style>
+          </head>
+          <body>${activeTab?.content || ''}</body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
+    }
+  }, [activeTab])
+
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-full flex-col bg-background">
       {/* Tab bar */}
       <div className="flex items-center border-b border-border bg-card" onDoubleClick={handleTabBarDoubleClick}>
         <div className="flex flex-1 items-center overflow-x-auto">
@@ -777,12 +825,12 @@ export function Notepad() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto">
                 <div className="p-2">
                   <div className="space-y-1">
                     {/* Root level files */}
-                    <div 
+                    <div
                       onDragOver={handleDragOver}
                       onDrop={handleDropOutsideFolder}
                       className="min-h-[40px]"
@@ -878,7 +926,7 @@ export function Notepad() {
                             <X className="h-3 w-3" />
                           </button>
                         </div>
-                        
+
                         {folder.isExpanded && (
                           <div className="ml-4 space-y-1">
                             {getFilesInFolder(folder.id).map(tab => (
@@ -1043,6 +1091,9 @@ export function Notepad() {
             Lines: {(activeTab?.content || "").split("\n").length}
           </span>
           <span>
+            Words: {getWordCount(activeTab?.content || "")}
+          </span>
+          <span>
             Length: {(activeTab?.content || "").length}
           </span>
         </div>
@@ -1120,6 +1171,14 @@ export function Notepad() {
             aria-label="Save document"
           >
             <Save className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handlePrint}
+            className="rounded p-1 transition-colors hover:bg-accent"
+            title="Print (Ctrl+P)"
+            aria-label="Print document"
+          >
+            <Printer className="h-4 w-4" />
           </button>
           <button
             onClick={toggleTheme}

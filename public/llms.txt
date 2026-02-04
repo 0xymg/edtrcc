@@ -1,0 +1,29 @@
+# EDTR++
+
+EDTR++ is a premium, browser-based online notepad inspired by the simplicity and legendary utility of Notepad++. It is designed for developers, writers, and power users who need a zero-friction, blazingly fast writing and coding environment.
+
+## Project Structure
+- Landing Page (Home): https://edtr.cc (or root)
+- Main Editor: https://edtr.cc/notepad
+
+## Key Features
+- **Notepad++ Inspired**: Clean, minimalistic, and focused on utility.
+- **Autosave**: Instant data persistence to `localStorage` every 5 seconds.
+- **Privacy First**: All data is stored locally in the browser. No server-side storage or tracking.
+- **Syntax Highlighting**: Support for 20+ programming languages (JS, TS, Python, Go, Rust, etc.).
+- **Code Formatting**: One-click formatting with support for JSON and other languages.
+- **PWA Support**: Fully installable as a Progressive Web App for desktop and mobile.
+- **Word Count**: Real-time line, character, and word count.
+- **Print & PDF**: Native document printing and PDF export.
+- **Sidebar Management**: Intuitive file and folder structure for managing multiple notes.
+- **Dark Mode**: Native light and dark theme support.
+- **Browser-Based**: Works in all modern browsers without login or registration.
+
+## Technical Stack
+- Next.js (App Router)
+- React
+- Tailwind CSS
+- Lucide Icons
+- Highlight.js (Syntax Highlighting)
+- Shadcn UI
+- HTML5 LocalStorage API
