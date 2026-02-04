@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://edtr.cc"
   const lastModified = new Date()
 
   return [
@@ -10,6 +10,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 1,
+    },
+    {
+      url: `${siteUrl}/notepad`,
+      lastModified,
+      changeFrequency: "daily",
+      priority: 0.8,
     },
   ]
 }
