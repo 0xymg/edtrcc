@@ -8,9 +8,9 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Notepad++',
-  description: 'A simple notepad app with tabs',
-  generator: 'v0.app',
+  title: 'EDTR++',
+  description: 'An online notepad++ for quick notes',
+  generator: 'YMG.DIGITAL',
   icons: {
     icon: [
       {
