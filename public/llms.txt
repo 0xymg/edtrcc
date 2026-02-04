@@ -1,6 +1,6 @@
-# EDTR++
+# EDTR
 
-EDTR++ is a premium, browser-based online notepad inspired by the simplicity and legendary utility of Notepad++. It is designed for developers, writers, and power users who need a zero-friction, blazingly fast writing and coding environment.
+EDTR is a premium, browser-based online notepad inspired by the simplicity and legendary utility of Notepad++. It is designed for developers, writers, and power users who need a zero-friction, blazingly fast writing and coding environment.
 
 ## Project Structure
 - Landing Page (Home): https://edtr.cc (or root)

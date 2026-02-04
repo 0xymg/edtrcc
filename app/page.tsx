@@ -35,10 +35,9 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 border-b border-muted bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-foreground text-background">
-              <FileText className="h-5 w-5" />
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-sm bg-foreground text-background">
+              <img src="/icon.svg" alt="EDTR Logo" className="h-full w-full object-cover" />
             </div>
-            <span className="text-xl font-bold tracking-tight">EDTR++</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
             <a href="#features" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">Features</a>
@@ -100,7 +99,9 @@ export default function LandingPage() {
               <div className="mt-8 flex justify-center gap-8 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+S</kbd> SAVE</div>
                 <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+J</kbd> NEW TAB</div>
-                <div className="flex items-center gap-2">PWA INSTALLABLE</div>
+                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+K</kbd> CLOSE TAB</div>
+                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+L</kbd> SIDEBAR</div>
+                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">PWA INSTALLABLE</kbd></div>
               </div>
             </div>
           </div>
@@ -166,7 +167,7 @@ export default function LandingPage() {
               <div className="border-l-4 border-foreground pl-8">
                 <h2 className="text-5xl font-black tracking-tighter uppercase italic mb-8">Technical Overview</h2>
                 <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-                  EDTR++ is a browser-exclusive environment built for the modern technical workflow. <strong>Inspired by the functional purity of Notepad++</strong>, we prioritize execution over aesthetics, giving you the fastest tools in the industry.
+                  EDTR is a browser-exclusive environment built for the modern technical workflow. <strong>Inspired by the functional purity of Notepad++</strong>, we prioritize execution over aesthetics, giving you the fastest tools in the industry.
                 </p>
                 <p className="text-xl text-muted-foreground leading-relaxed mt-4 font-medium">
                   We leverage <strong>HTML5 LocalStorage</strong> for persistent data cycles that never touch a server. Your privacy is not a feature; it is the foundation.
@@ -204,9 +205,9 @@ export default function LandingPage() {
 
             <Accordion type="single" collapsible className="w-full">
               {[
-                { q: "Is it really free?", a: "Yes. EDTR++ is a utility provided for the creative web. No cost. No hidden fees." },
+                { q: "Is it really free?", a: "Yes. EDTR is a utility provided for the creative web. No cost. No hidden fees." },
                 { q: "Where is my data?", a: "On your machine. We use LocalStorage, which means your notes never cross the wire." },
-                { q: "Offline usage?", a: "Fully supported. Install the PWA to use EDTR++ anywhere, anytime." },
+                { q: "Offline usage?", a: "Fully supported. Install the PWA to use EDTR anywhere, anytime." },
                 { q: "Language support?", a: "20+ languages including Markdown, TypeScript, Python, and JSON." }
               ].map((faq, i) => (
                 <AccordionItem key={i} value={`item-${i}`} className="border-muted px-4">
@@ -241,20 +242,16 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-12 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-foreground text-[12px] text-background font-black italic">
-                E+
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-sm bg-foreground text-background">
+                <img src="/icon.svg" alt="EDTR Logo" className="h-full w-full object-cover" />
               </div>
-              <span className="font-extrabold uppercase tracking-widest text-xl">EDTR++</span>
             </div>
 
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              © {new Date().getFullYear()} EDTR.CC / ENGINEERED BY YMG.DIGITAL / BUILT FOR UTILITY.
+              © {new Date().getFullYear()} EDTR.CC / BUILT BY YMG.DIGITAL
             </p>
 
-            <div className="flex items-center gap-6">
-              <Twitter className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground transition-all" />
-              <Github className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground transition-all" />
-            </div>
+
           </div>
         </div>
       </footer>

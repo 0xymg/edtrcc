@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-const siteName = "EDTR++"
-const siteTitle = "EDTR++ — Online Notepad++ for Quick Notes"
+const siteName = "EDTR"
+const siteTitle = "EDTR — Online Notepad++ for Quick Notes"
 const siteDescription = "An online Notepad++ for quick notes."
 
 export const viewport: Viewport = {

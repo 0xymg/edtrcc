@@ -217,8 +217,8 @@ export function Notepad() {
 
   const activeTab = tabs.find(tab => tab.id === activeTabId)
 
-  const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const closeTab = useCallback((tabId: string, e?: React.MouseEvent | KeyboardEvent) => {
+    if (e && 'stopPropagation' in e) e.stopPropagation()
     setTabs(prev => {
       const newTabs = prev.filter(tab => tab.id !== tabId)
       if (newTabs.length === 0) {
@@ -682,6 +682,16 @@ export function Notepad() {
         e.preventDefault()
         createNewTab()
       }
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault()
+        if (activeTabId) {
+          closeTab(activeTabId, e)
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "l") {
+        e.preventDefault()
+        setSidebarOpen(prev => !prev)
+      }
       // Format with Shift+Alt+F (like VS Code)
       if (e.shiftKey && e.altKey && e.key === "F") {
         e.preventDefault()
@@ -691,7 +701,7 @@ export function Notepad() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [saveToLocalStorage, createNewTab, formatCode])
+  }, [saveToLocalStorage, createNewTab, formatCode, activeTabId, closeTab])
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -722,7 +732,7 @@ export function Notepad() {
       printWindow.document.write(`
         <html>
           <head>
-            <title>EDTR++ - ${activeTab?.name || 'Untitled'}</title>
+            <title>EDTR - ${activeTab?.name || 'Untitled'}</title>
             <style>
               body { font-family: monospace; white-space: pre-wrap; padding: 20px; }
             </style>
@@ -772,9 +782,10 @@ export function Notepad() {
               <button
                 onClick={(e) => closeTab(tab.id, e)}
                 className="ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
+                title={`Close ${tab.name} (${navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}
                 aria-label={`Close ${tab.name}`}
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </button>
           ))}
@@ -782,6 +793,7 @@ export function Notepad() {
         <button
           onClick={createNewTab}
           className="flex h-full items-center px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          title={`New file (${navigator.platform.includes('Mac') ? '⌘J' : 'Ctrl+J'})`}
           aria-label="New tab"
         >
           <Plus className="h-4 w-4" />
@@ -811,7 +823,7 @@ export function Notepad() {
                   <button
                     onClick={createNewTab}
                     className="rounded p-1 transition-colors hover:bg-accent"
-                    title="New file"
+                    title={`New file (${navigator.platform.includes('Mac') ? '⌘J' : 'Ctrl+J'})`}
                     aria-label="New file"
                   >
                     <Plus className="h-4 w-4" />
@@ -819,7 +831,8 @@ export function Notepad() {
                   <button
                     onClick={() => setSidebarOpen(false)}
                     className="rounded p-1 transition-colors hover:bg-accent"
-                    aria-label="Close sidebar"
+                    title={`Hide sidebar (${navigator.platform.includes('Mac') ? '⌘L' : 'Ctrl+L'})`}
+                    aria-label="Hide sidebar"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -977,28 +990,29 @@ export function Notepad() {
                   <h2 className="text-2xl font-semibold text-foreground">No files open</h2>
                   <p className="text-sm text-muted-foreground">Create a new file to get started</p>
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   <button
                     onClick={createNewTab}
-                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="flex items-center gap-2 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
                   >
                     <Plus className="h-4 w-4" />
                     New File
                   </button>
                   <div className="flex flex-col gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <span>Press</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span>New File:</span>
                       <Kbd>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</Kbd>
-                      <span>+</span>
                       <Kbd>J</Kbd>
-                      <span>to create a new file</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span>Press</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Save:</span>
                       <Kbd>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</Kbd>
-                      <span>+</span>
                       <Kbd>S</Kbd>
-                      <span>to save</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-[10px] opacity-70">
+                      <span>Close Tab: <Kbd>⌘</Kbd><Kbd>K</Kbd></span>
+                      <span className="mx-1">•</span>
+                      <span>Sidebar: <Kbd>⌘</Kbd><Kbd>L</Kbd></span>
                     </div>
                   </div>
                 </div>
@@ -1082,7 +1096,7 @@ export function Notepad() {
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="rounded p-1 transition-colors hover:bg-accent"
-            title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+            title={`${sidebarOpen ? "Hide" : "Show"} sidebar (${navigator.platform.includes('Mac') ? '⌘L' : 'Ctrl+L'})`}
             aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
           >
             <Menu className="h-4 w-4" />
@@ -1097,7 +1111,8 @@ export function Notepad() {
             Length: {(activeTab?.content || "").length}
           </span>
         </div>
-        <div className="absolute left-1/2 -translate-x-1/2 font-semibold text-foreground">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 font-semibold text-foreground">
+          <img src="/icon.svg" alt="" className="h-3.5 w-3.5 rounded-sm" aria-hidden="true" />
           EDTR.CC
         </div>
         <div className="flex items-center gap-4">

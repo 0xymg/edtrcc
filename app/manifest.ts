@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'EDTR++',
-        short_name: 'EDTR++',
+        name: 'EDTR',
+        short_name: 'EDTR',
         description: 'An online Notepad++ for quick notes.',
         start_url: '/notepad',
         id: '/notepad',
