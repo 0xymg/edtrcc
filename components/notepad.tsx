@@ -724,7 +724,7 @@ export function Notepad() {
                   : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
-                  <FileText className="h-4 w-4 shrink-0" />
+              <FileText className="h-4 w-4 shrink-0" />
               {editingTabId === tab.id ? (
                 <input
                   autoFocus
@@ -737,11 +737,11 @@ export function Notepad() {
                 />
               ) : (
                 <span className="max-w-32 truncate">{tab.name}</span>
-                  )}
-                  {tab.isModified && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
-                  )}
-                  <button
+              )}
+              {tab.isModified && (
+                <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+              )}
+              <button
                 onClick={(e) => closeTab(tab.id, e)}
                 className="ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
                 aria-label={`Close ${tab.name}`}
@@ -820,17 +820,17 @@ export function Notepad() {
                           onContextMenu={(e) => handleContextMenu(e, tab.id)}
                           className={cn(
                             "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                  tab.id === activeTabId
-                    ? "bg-secondary text-foreground"
-                    : "text-foreground hover:bg-accent",
-                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
+                            tab.id === activeTabId
+                              ? "bg-secondary text-foreground"
+                              : "text-foreground hover:bg-accent",
+                            dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                           )}
                         >
-                    <FileText className="h-4 w-4 shrink-0" />
-                    <span className="truncate flex-1">{tab.name}</span>
-                    {tab.isModified && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
-                    )}
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span className="truncate flex-1">{tab.name}</span>
+                          {tab.isModified && (
+                            <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                          )}
                         </button>
                       ))}
                     </div>
@@ -839,28 +839,33 @@ export function Notepad() {
                     {folders.map(folder => (
                       <div key={folder.id} className="space-y-1">
                         <div
-                          onDragOver={handleDragOver}
-                          onDragEnter={() => handleDragEnterFolder(folder.id)}
+                          onClick={() => {
+                            if (editingFolderId !== folder.id) {
+                              toggleFolder(folder.id)
+                            }
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation()
+                            startRenamingFolder(folder)
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDragEnterFolder(folder.id)
+                          }}
                           onDragLeave={handleDragLeaveFolder}
-                          onDrop={() => handleDropOnFolder(folder.id)}
-                className={cn(
-                  "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
-                  "text-foreground hover:bg-accent",
-                  dragOverFolder === folder.id && "bg-muted ring-2 ring-border"
+                          onDrop={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDropOnFolder(folder.id)
+                          }}
+                          className={cn(
+                            "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
+                            "text-foreground hover:bg-accent",
+                            dragOverFolder === folder.id && "bg-muted ring-2 ring-border"
                           )}
                         >
-                          <button
-                            onClick={() => {
-                              if (editingFolderId !== folder.id) {
-                                toggleFolder(folder.id)
-                              }
-                            }}
-                            onDoubleClick={(e) => {
-                              e.stopPropagation()
-                              startRenamingFolder(folder)
-                            }}
-                            className="flex items-center gap-1 flex-1 justify-start"
-                          >
+                          <div className="flex items-center gap-1 flex-1">
                             {folder.isExpanded ? (
                               <ChevronDown className="h-4 w-4 shrink-0" />
                             ) : (
@@ -884,7 +889,7 @@ export function Notepad() {
                             ) : (
                               <span className="truncate flex-1">{folder.name}</span>
                             )}
-                          </button>
+                          </div>
                           <button
                             onClick={(e) => deleteFolder(folder.id, e)}
                             className="opacity-0 group-hover:opacity-100 rounded p-0.5 hover:bg-destructive/10"
@@ -909,17 +914,17 @@ export function Notepad() {
                                 onContextMenu={(e) => handleContextMenu(e, tab.id)}
                                 className={cn(
                                   "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                  tab.id === activeTabId
-                    ? "bg-secondary text-foreground"
-                    : "text-foreground hover:bg-accent",
-                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
+                                  tab.id === activeTabId
+                                    ? "bg-secondary text-foreground"
+                                    : "text-foreground hover:bg-accent",
+                                  dragOverTab === tab.id && "border-b-2 border-muted-foreground"
                                 )}
                               >
-                  <FileText className="h-4 w-4 shrink-0" />
-                  <span className="truncate flex-1">{tab.name}</span>
-                  {tab.isModified && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
-                  )}
+                                <FileText className="h-4 w-4 shrink-0" />
+                                <span className="truncate flex-1">{tab.name}</span>
+                                {tab.isModified && (
+                                  <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                                )}
                               </button>
                             ))}
                           </div>
@@ -985,35 +990,35 @@ export function Notepad() {
                 )}
               </div>
 
-{/* Text area with syntax highlighting */}
-  <div className="relative flex-1 overflow-auto">
-  {/* Syntax highlighted background */}
-  {activeTab?.language !== "plaintext" && activeTab?.content && (
-  <pre
-  className="pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre-wrap break-words p-3 font-mono text-sm leading-6"
-  aria-hidden="true"
-  // biome-ignore lint/security/noDangerouslySetInnerHtml: safe for syntax highlighting
-  dangerouslySetInnerHTML={{
-    __html: getHighlightedCode(activeTab.content, activeTab.language)
-  }}
-  />
-  )}
-  {/* Actual textarea for editing */}
-  <textarea
-  ref={textareaRef}
-  value={activeTab?.content || ""}
-  onChange={(e) => updateContent(e.target.value)}
-  onKeyDown={handleKeyDown}
-  className={cn(
-    "absolute inset-0 h-full w-full resize-none bg-transparent p-3 font-mono text-sm leading-6 outline-none placeholder:text-muted-foreground",
-    activeTab?.language !== "plaintext" && activeTab?.content
-    ? "text-transparent caret-foreground"
-    : "text-foreground"
-  )}
-  placeholder="Start typing..."
-  spellCheck={false}
-  />
-  </div>
+              {/* Text area with syntax highlighting */}
+              <div className="relative flex-1 overflow-auto">
+                {/* Syntax highlighted background */}
+                {activeTab?.language !== "plaintext" && activeTab?.content && (
+                  <pre
+                    className="pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre-wrap break-words p-3 font-mono text-sm leading-6"
+                    aria-hidden="true"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: safe for syntax highlighting
+                    dangerouslySetInnerHTML={{
+                      __html: getHighlightedCode(activeTab.content, activeTab.language)
+                    }}
+                  />
+                )}
+                {/* Actual textarea for editing */}
+                <textarea
+                  ref={textareaRef}
+                  value={activeTab?.content || ""}
+                  onChange={(e) => updateContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className={cn(
+                    "absolute inset-0 h-full w-full resize-none bg-transparent p-3 font-mono text-sm leading-6 outline-none placeholder:text-muted-foreground",
+                    activeTab?.language !== "plaintext" && activeTab?.content
+                      ? "text-transparent caret-foreground"
+                      : "text-foreground"
+                  )}
+                  placeholder="Start typing..."
+                  spellCheck={false}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -1073,7 +1078,7 @@ export function Notepad() {
               {saveStatus === "saved" ? "✓ Saved" : "Saving..."}
             </span>
           )}
-{formatError && (
+          {formatError && (
             <span className="max-w-48 truncate text-destructive" title={formatError}>
               Syntax Error
             </span>
@@ -1092,43 +1097,43 @@ export function Notepad() {
             <span className="hidden sm:inline">{isFormatting ? "Formatting..." : "Format"}</span>
           </button>
           <span>UTF-8</span>
-  <div className="relative">
-  <button
-  ref={languageButtonRef}
-  onClick={(e) => {
-    e.stopPropagation()
-    setLanguageMenuOpen(!languageMenuOpen)
-  }}
-  className="flex items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-accent"
-  >
-  <span>{LANGUAGES.find(l => l.id === activeTab?.language)?.name || "Plain Text"}</span>
-  <ChevronDown className="h-3 w-3" />
-  </button>
-  {languageMenuOpen && (
-  <div
-  ref={languageMenuRef}
-  className="absolute bottom-full right-0 mb-1 max-h-64 w-48 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-lg"
-  onClick={(e) => e.stopPropagation()}
-  >
-  {LANGUAGES.map(lang => (
-    <button
-    key={lang.id}
-    onClick={() => changeLanguage(lang.id)}
-    className={cn(
-      "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent",
-      activeTab?.language === lang.id && "bg-accent"
-    )}
-    >
-    <span>{lang.name}</span>
-    {activeTab?.language === lang.id && (
-      <Check className="h-4 w-4" />
-    )}
-    </button>
-  ))}
-  </div>
-  )}
-  </div>
-  <button
+          <div className="relative">
+            <button
+              ref={languageButtonRef}
+              onClick={(e) => {
+                e.stopPropagation()
+                setLanguageMenuOpen(!languageMenuOpen)
+              }}
+              className="flex items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-accent"
+            >
+              <span>{LANGUAGES.find(l => l.id === activeTab?.language)?.name || "Plain Text"}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {languageMenuOpen && (
+              <div
+                ref={languageMenuRef}
+                className="absolute bottom-full right-0 mb-1 max-h-64 w-48 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {LANGUAGES.map(lang => (
+                  <button
+                    key={lang.id}
+                    onClick={() => changeLanguage(lang.id)}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent",
+                      activeTab?.language === lang.id && "bg-accent"
+                    )}
+                  >
+                    <span>{lang.name}</span>
+                    {activeTab?.language === lang.id && (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
             onClick={saveToLocalStorage}
             className="rounded p-1 transition-colors hover:bg-accent"
             title="Save (Ctrl+S / Cmd+S)"
