@@ -737,11 +737,11 @@ export function Notepad() {
                 />
               ) : (
                 <span className="max-w-32 truncate">{tab.name}</span>
-              )}
-              {tab.isModified && (
-                <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-              )}
-              <button
+                  )}
+                  {tab.isModified && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                  )}
+                  <button
                 onClick={(e) => closeTab(tab.id, e)}
                 className="ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
                 aria-label={`Close ${tab.name}`}
@@ -826,11 +826,11 @@ export function Notepad() {
                             dragOverTab === tab.id && "border-b-2 border-primary"
                           )}
                         >
-                          <FileText className="h-4 w-4 shrink-0" />
-                          <span className="truncate flex-1">{tab.name}</span>
-                          {tab.isModified && (
-                            <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" />
-                          )}
+                    <FileText className="h-4 w-4 shrink-0" />
+                    <span className="truncate flex-1">{tab.name}</span>
+                    {tab.isModified && (
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                    )}
                         </button>
                       ))}
                     </div>
@@ -915,11 +915,11 @@ export function Notepad() {
                                   dragOverTab === tab.id && "border-b-2 border-primary"
                                 )}
                               >
-                                <FileText className="h-4 w-4 shrink-0" />
-                                <span className="truncate flex-1">{tab.name}</span>
-                                {tab.isModified && (
-                                  <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" />
-                                )}
+                  <FileText className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">{tab.name}</span>
+                  {tab.isModified && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                  )}
                               </button>
                             ))}
                           </div>
