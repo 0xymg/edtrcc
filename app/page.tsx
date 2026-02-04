@@ -23,7 +23,8 @@ import {
   MousePointer2,
   Globe2,
   Lock,
-  Bookmark
+  Bookmark,
+  Monitor
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -40,9 +41,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="hidden items-center gap-8 md:flex">
-            <a href="#features" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">Features</a>
-            <a href="#demo" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">Demo</a>
-            <a href="#how-it-works" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">Technical</a>
+
             <Link href="/notepad">
               <Button size="sm" variant="outline" className="rounded-none border-2 border-foreground hover:bg-foreground hover:text-background font-bold px-6">
                 LAUNCH EDITOR
@@ -53,56 +52,51 @@ export default function LandingPage() {
       </nav>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden pt-24 pb-20 lg:pt-32 lg:pb-32 border-b border-muted">
-          <div className="container mx-auto px-4 text-center">
-            <Badge variant="outline" className="mb-6 rounded-none border-foreground/20 py-1 px-4 text-[10px] font-bold uppercase tracking-[0.2em]">
-              Next-Gen Precision
-            </Badge>
-            <h1 className="mb-6 text-6xl font-black tracking-tighter uppercase sm:text-7xl lg:text-8xl animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-100 italic">
-              Simple. <br />
-              <span className="text-muted-foreground">Powerful.</span>
-            </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl font-medium animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
-              The legendary efficiency of Notepad++, reimagined for the modern web. Built for developers who value raw performance.
-            </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
-              <Link href="/notepad">
-                <Button size="lg" className="h-14 rounded-none px-10 text-lg font-black uppercase tracking-wide bg-foreground text-background hover:bg-muted-foreground">
-                  START WRITING NOW
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="h-14 rounded-none px-8 text-lg font-bold uppercase tracking-wide border-2 border-foreground hover:bg-foreground hover:text-background">
-                GITHUB <Github className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Demo Section */}
-        <section id="demo" className="bg-muted/30 py-20 lg:py-32 border-b border-muted">
+        {/* Hero Section with Integrated Demo */}
+        <section className="relative overflow-hidden border-b border-muted pt-12 pb-20 lg:pt-20 lg:pb-32">
           <div className="container mx-auto px-4">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-3xl font-bold tracking-tight uppercase">Workspace Demo</h2>
-              <div className="h-1 w-20 bg-foreground mx-auto mb-4" />
-              <p className="mx-auto max-w-2xl text-muted-foreground font-medium">
-                The full desktop experience, optimized for the browser. No friction, just focus.
-              </p>
-            </div>
-
-            <div className="mx-auto max-w-5xl animate-in fade-in zoom-in-95 duration-1000">
-              <Card className="rounded-none border-2 border-foreground/10 bg-background shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden">
-                <div className="h-[500px] w-full border-t">
-                  <Notepad />
+            <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
+              {/* Left Column: Headlines */}
+              <div className="lg:col-span-5 space-y-8 text-left">
+                <Badge variant="outline" className="rounded-none border-foreground/20 py-1 px-4 text-[10px] font-bold uppercase tracking-[0.2em]">
+                  ONLINE NOTEPAD++
+                </Badge>
+                <h1 className="text-4xl font-black tracking-tighter uppercase sm:text-5xl lg:text-6xl animate-in fade-in slide-in-from-left-4 duration-1000">
+                  Simple. <br />
+                  <span className="text-muted-foreground">Powerful.</span>
+                </h1>
+                <p className="max-w-md text-lg text-muted-foreground sm:text-xl font-medium animate-in fade-in slide-in-from-left-5 duration-1000 delay-200">
+                  The legendary efficiency of Notepad++, available in your browser.
+                </p>
+                <div className="flex flex-col gap-4 sm:flex-row animate-in fade-in slide-in-from-left-6 duration-1000 delay-300">
+                  <Link href="/notepad">
+                    <Button size="lg" className="h-14 rounded-none px-8 text-md font-black uppercase tracking-wide bg-foreground text-background hover:bg-muted-foreground">
+                      GO TO APP
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="lg" className="h-14 rounded-none px-8 text-md font-bold uppercase tracking-wide border-2 border-foreground hover:bg-foreground hover:text-background">
+                    GITHUB <Github className="ml-2 h-5 w-5" />
+                  </Button>
                 </div>
-              </Card>
-              <div className="mt-8 flex justify-center gap-8 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+S</kbd> SAVE</div>
-                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+J</kbd> NEW TAB</div>
-                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+K</kbd> CLOSE TAB</div>
-                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">CMD+L</kbd> SIDEBAR</div>
-                <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1">PWA INSTALLABLE</kbd></div>
               </div>
+
+              {/* Center Column: The Demo Card */}
+              <div className="lg:col-span-7 relative">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-muted/20 to-transparent blur-3xl" />
+                <Card className="relative rounded-none border-2 border-foreground/10 bg-background shadow-[30px_30px_0px_0px_rgba(0,0,0,0.05)] overflow-hidden animate-in zoom-in-95 duration-1000 delay-200">
+                  <div className="h-[500px] w-full border-t">
+                    <Notepad />
+                  </div>
+                </Card>
+                <div className="mt-8 flex flex-wrap justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 animate-in fade-in delay-500">
+                  <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1 bg-muted/50">CMD+S</kbd> SAVE</div>
+                  <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1 bg-muted/50">CMD+J</kbd> NEW TAB</div>
+                  <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1 bg-muted/50">CMD+K</kbd> CLOSE TAB</div>
+                  <div className="flex items-center gap-2"><kbd className="border border-muted-foreground/30 px-1 bg-muted/50">CMD+L</kbd> SIDEBAR</div>
+                </div>
+              </div>
+
+
             </div>
           </div>
         </section>
@@ -167,29 +161,92 @@ export default function LandingPage() {
               <div className="border-l-4 border-foreground pl-8">
                 <h2 className="text-5xl font-black tracking-tighter uppercase italic mb-8">Technical Overview</h2>
                 <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-                  EDTR is a browser-exclusive environment built for the modern technical workflow. <strong>Inspired by the functional purity of Notepad++</strong>, we prioritize execution over aesthetics, giving you the fastest tools in the industry.
+                  EDTR is a <strong>free online notepad</strong> and browser-exclusive code environment. <strong>Inspired by the functional purity of Notepad++</strong>, we prioritize raw execution over visual bloat, providing a seamless workspace for your ideas, to-do lists, and technical documentation.
                 </p>
                 <p className="text-xl text-muted-foreground leading-relaxed mt-4 font-medium">
-                  We leverage <strong>HTML5 LocalStorage</strong> for persistent data cycles that never touch a server. Your privacy is not a feature; it is the foundation.
+                  Unlike traditional word processors, EDTR focuses on <strong>high-performance plain text</strong>. We leverage HTML5 for persistent draft cycles that stay on your device—private, secure, and always accessible.
                 </p>
               </div>
 
-              <div className="grid gap-12 sm:grid-cols-2">
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="border border-muted p-8">
                   <h3 className="text-xs font-bold uppercase tracking-[0.3em] mb-4 text-foreground flex items-center gap-2">
-                    <Zap className="h-4 w-4" /> ARCHITECTURE
+                    <Zap className="h-4 w-4" /> AUTOSAVE
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed font-semibold uppercase">
-                    Zero-Latency persistent cycles via browser API. No login. No database. No tracking. Pure utility.
+                    Your work is never lost. Automatic persistence ensures your drafts remain even if the browser closes.
                   </p>
                 </div>
                 <div className="border border-muted p-8">
                   <h3 className="text-xs font-bold uppercase tracking-[0.3em] mb-4 text-foreground flex items-center gap-2">
-                    <Globe2 className="h-4 w-4" /> COMPATIBILITY
+                    <Shield className="h-4 w-4" /> PRIVACY
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed font-semibold uppercase">
-                    Universal support for all modern rendering engines. Offline capability via PWA standards.
+                    Stored locally on your device. No servers. No tracking. Your notes are available only to you.
                   </p>
+                </div>
+                <div className="border border-muted p-8">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.3em] mb-4 text-foreground flex items-center gap-2">
+                    <Globe2 className="h-4 w-4" /> MULTI-TAB
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-semibold uppercase">
+                    A true multi-page notepad experience. Manage multiple files and ideas simultaneously with ease.
+                  </p>
+                </div>
+                <div className="border border-muted p-8">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.3em] mb-4 text-foreground flex items-center gap-2">
+                    <Monitor className="h-4 w-4" /> PURE TEXT
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-semibold uppercase">
+                    No rich text formatting. Just raw, high-performance execution for developers and power users.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* Contributions Section */}
+        <section className="py-20 lg:py-32 bg-black text-white px-4 lg:px-0">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-8">
+              <Badge variant="outline" className="rounded-none border-white/20 py-1 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                Community Driven
+              </Badge>
+              <h2 className="text-4xl font-black tracking-tighter uppercase sm:text-5xl lg:text-6xl italic text-white">
+                Open Source & <br />
+                <span className="opacity-50">Contributions</span>
+              </h2>
+              <p className="text-lg opacity-80 font-medium leading-relaxed text-white">
+                EDTR is a <strong>100% open source</strong> utility built for the global developer community. We are open to all contributions as long as they maintain the application&apos;s <strong>purity, simplicity, and raw performance</strong>.
+              </p>
+              <Button size="lg" variant="secondary" className="h-14 rounded-none px-10 text-md font-black uppercase tracking-widest bg-white text-black hover:bg-zinc-200 transition-all">
+                VIEW ON GITHUB <Github className="ml-2 h-5 w-5" />
+              </Button>
+
+              <div className="pt-16 border-t border-background/10 w-full max-w-2xl">
+                <h3 className="text-xs font-bold uppercase tracking-[0.4em] mb-8 opacity-60">To Our Contributors: Thank You.</h3>
+                <div className="flex flex-wrap justify-center gap-4">
+                  {[
+                    "0xymg", // Owner/Primary
+                  ].map((username) => (
+                    <a
+                      key={username}
+                      href={`https://github.com/${username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative h-12 w-12 overflow-hidden border border-background/20 transition-all hover:border-background"
+                      title={username}
+                    >
+                      <img
+                        src={`https://github.com/${username}.png`}
+                        alt={username}
+                        className="h-full w-full object-cover grayscale transition-all group-hover:grayscale-0"
+                      />
+                    </a>
+                  ))}
+                  <div className="flex h-12 w-12 items-center justify-center border border-dashed border-background/20 text-[10px] font-bold uppercase text-background/40">
+                    YOU?
+                  </div>
                 </div>
               </div>
             </div>
@@ -221,20 +278,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-24 lg:py-40">
-          <div className="container mx-auto px-4">
-            <div className="bg-foreground text-background p-12 lg:p-24 text-center">
-              <h2 className="mb-8 text-5xl font-black uppercase tracking-tighter italic sm:text-6xl">Ready for High-Performance?</h2>
-              <div className="h-2 w-32 bg-background mx-auto mb-10" />
-              <Link href="/notepad">
-                <Button size="lg" variant="secondary" className="h-16 rounded-none px-12 text-xl font-black uppercase tracking-widest bg-background text-foreground hover:bg-muted-foreground transition-all">
-                  INITIALIZE EDITOR
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
+
       </main>
 
       {/* Footer */}
