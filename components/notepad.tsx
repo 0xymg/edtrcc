@@ -135,6 +135,8 @@ export function Notepad() {
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null)
   const [dragOverTab, setDragOverTab] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ type: "tab" | "folder"; id: string; x: number; y: number } | null>(null)
+  const [statusBarColor, setStatusBarColor] = useState("")
+  const [statusBarTextColor, setStatusBarTextColor] = useState("")
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [isFormatting, setIsFormatting] = useState(false)
   const [formatError, setFormatError] = useState<string | null>(null)
@@ -617,6 +619,10 @@ export function Notepad() {
         }
       } catch (e) { }
     }
+    const savedStatusBarColor = localStorage.getItem("notepad-statusbar-color")
+    if (savedStatusBarColor) setStatusBarColor(savedStatusBarColor)
+    const savedStatusBarTextColor = localStorage.getItem("notepad-statusbar-text-color")
+    if (savedStatusBarTextColor) setStatusBarTextColor(savedStatusBarTextColor)
     setTimeout(() => textareaRef.current?.focus(), 0)
   }, [])
 
@@ -626,6 +632,8 @@ export function Notepad() {
     const initialTheme = savedTheme || (isDark ? "dark" : "light")
     setTheme(initialTheme)
     updateTheme(initialTheme)
+    const savedStatusBarColor = localStorage.getItem("notepad-statusbar-color")
+    if (savedStatusBarColor) setStatusBarColor(savedStatusBarColor)
   }, [updateTheme])
 
   useEffect(() => {
@@ -817,6 +825,24 @@ export function Notepad() {
         handlePrint={handlePrint}
         toggleTheme={toggleTheme}
         theme={theme}
+        statusBarColor={statusBarColor}
+        setStatusBarColor={(color: string) => {
+          setStatusBarColor(color)
+          if (color) {
+            localStorage.setItem("notepad-statusbar-color", color)
+          } else {
+            localStorage.removeItem("notepad-statusbar-color")
+          }
+        }}
+        statusBarTextColor={statusBarTextColor}
+        setStatusBarTextColor={(color: string) => {
+          setStatusBarTextColor(color)
+          if (color) {
+            localStorage.setItem("notepad-statusbar-text-color", color)
+          } else {
+            localStorage.removeItem("notepad-statusbar-text-color")
+          }
+        }}
       />
     </div>
   )
