@@ -1,29 +1,40 @@
 # EDTR
 
-EDTR is a premium, browser-based online notepad inspired by the simplicity and legendary utility of Notepad++. It is designed for developers, writers, and power users who need a zero-friction, blazingly fast writing and coding environment.
+> Free online notepad and code editor. Notepad++ speed in your browser.
 
-## Project Structure
-- Landing Page (Home): https://edtr.cc (or root)
-- Main Editor: https://edtr.cc/notepad
+## Links
 
-## Key Features
-- **Notepad++ Inspired**: Clean, minimalistic, and focused on utility.
-- **Autosave**: Instant data persistence to `localStorage` every 5 seconds.
-- **Privacy First**: All data is stored locally in the browser. No server-side storage or tracking.
-- **Syntax Highlighting**: Support for 20+ programming languages (JS, TS, Python, Go, Rust, etc.).
-- **Code Formatting**: One-click formatting with support for JSON and other languages.
-- **PWA Support**: Fully installable as a Progressive Web App for desktop and mobile.
-- **Word Count**: Real-time line, character, and word count.
-- **Print & PDF**: Native document printing and PDF export.
-- **Sidebar Management**: Intuitive file and folder structure for managing multiple notes.
-- **Dark Mode**: Native light and dark theme support.
-- **Browser-Based**: Works in all modern browsers without login or registration.
+- Website: https://edtr.cc
+- Editor: https://edtr.cc/notepad
+- GitHub: https://github.com/0xymg/edtrcc
+- Full docs: https://edtr.cc/llms-full.txt
 
-## Technical Stack
-- Next.js (App Router)
-- React
-- Tailwind CSS
-- Lucide Icons
-- Highlight.js (Syntax Highlighting)
-- Shadcn UI
-- HTML5 LocalStorage API
+## What is EDTR?
+
+EDTR is a free, open source, browser-based text editor and notepad inspired by Notepad++. It runs entirely in your browser with no accounts, no downloads, and no cloud storage. All data is saved to your browser's LocalStorage.
+
+## Features
+
+- Syntax highlighting for 20+ programming languages
+- Multi-tab editing with keyboard shortcuts
+- Automatic saving to browser LocalStorage
+- File System Access API (open/save files from disk on Chrome, Edge)
+- Progressive Web App (PWA) with offline support
+- No login required
+- No server-side storage or tracking
+- Dark and light theme support
+
+## Supported Languages
+
+JavaScript, TypeScript, Python, HTML, CSS, JSON, Markdown, Bash, SQL, Java, C, C++, C#, Go, Rust, PHP, Ruby, Swift, Kotlin, YAML, XML
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- highlight.js
+- Shadcn/UI + Radix UI
+- File System Access API
+- HTML5 LocalStorage

@@ -155,6 +155,73 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return tabs.filter(tab => tab.folderId === folderId)
     }
 
+    const getSubfolders = (parentFolderId: string | null) => {
+        if (parentFolderId === null) {
+            return folders.filter(f => !f.parentFolderId)
+        }
+        return folders.filter(f => f.parentFolderId === parentFolderId)
+    }
+
+    const renderFolder = (folder: FolderItem, depth = 0): React.ReactNode => (
+        <div key={folder.id} className="space-y-1">
+            <div
+                draggable
+                onDragStart={(e) => { e.stopPropagation(); handleFolderDragStart(folder.id) }}
+                onDragEnd={handleDragEnd}
+                onClick={() => { if (editingFolderId !== folder.id) toggleFolder(folder.id) }}
+                onDoubleClick={(e) => { e.stopPropagation(); startRenamingFolder(folder) }}
+                onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); handleDragEnterFolder(folder.id) }}
+                onDragLeave={handleDragLeaveFolder}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleDropOnFolder(folder.id) }}
+                className={cn(
+                    "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
+                    activeFolderId === folder.id
+                        ? "bg-secondary/50 text-foreground"
+                        : "text-foreground hover:bg-accent",
+                    draggedFolder === folder.id && "opacity-50",
+                    dragOverFolder === folder.id && draggedFolder && "border-t-2 border-t-foreground",
+                    dragOverFolder === folder.id && !draggedFolder && "bg-muted ring-2 ring-border"
+                )}
+            >
+                <div className="flex items-center gap-1 flex-1 min-w-0">
+                    {folder.isExpanded ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+                    {folder.isExpanded ? <FolderOpen className="h-4 w-4 shrink-0" /> : <Folder className="h-4 w-4 shrink-0" />}
+                    {editingFolderId === folder.id ? (
+                        <input
+                            autoFocus
+                            value={editingFolderName}
+                            onChange={(e) => setEditingFolderName(e.target.value)}
+                            onBlur={() => { setTimeout(() => finishRenamingFolder(folder.id), 150) }}
+                            onKeyDown={(e) => handleRenameFolderKeyDown(e, folder.id)}
+                            className="flex-1 bg-background px-1 text-foreground outline-none rounded"
+                            onClick={(e) => e.stopPropagation()}
+                            onDoubleClick={(e) => e.stopPropagation()}
+                        />
+                    ) : (
+                        <span className="truncate flex-1">{folder.name}</span>
+                    )}
+                </div>
+                <button
+                    onClick={(e) => deleteFolder(folder.id, e)}
+                    className="opacity-0 group-hover:opacity-100 rounded p-0.5 hover:bg-destructive/10 shrink-0"
+                    aria-label="Delete folder"
+                >
+                    <X className="h-3 w-3" />
+                </button>
+            </div>
+
+            {folder.isExpanded && (
+                <div className="ml-4 space-y-1">
+                    {/* Nested subfolders */}
+                    {getSubfolders(folder.id).map(sub => renderFolder(sub, depth + 1))}
+                    {/* Files in this folder */}
+                    {getFilesInFolder(folder.id).map(renderFileItem)}
+                </div>
+            )}
+        </div>
+    )
+
     return (
         <div className="flex h-full flex-col bg-card">
                     <div className="flex items-center justify-between border-b border-border px-3 py-2">
@@ -189,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <button
                                 onClick={createNewTab}
                                 className="rounded p-1 transition-colors hover:bg-accent"
-                                title={`New file (${typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘J' : 'Ctrl+J'})`}
+                                title={`New file (${typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘T' : 'Ctrl+T'})`}
                                 aria-label="New file"
                             >
                                 <Plus className="h-4 w-4" />
@@ -208,89 +275,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-2">
                             <div className="space-y-1">
-                                {/* Folders first */}
-                                {folders.map(folder => (
-                                    <div key={folder.id} className="space-y-1">
-                                        <div
-                                            draggable
-                                            onDragStart={(e) => {
-                                                e.stopPropagation()
-                                                handleFolderDragStart(folder.id)
-                                            }}
-                                            onDragEnd={handleDragEnd}
-                                            onClick={() => {
-                                                if (editingFolderId !== folder.id) {
-                                                    toggleFolder(folder.id)
-                                                }
-                                            }}
-                                            onDoubleClick={(e) => {
-                                                e.stopPropagation()
-                                                startRenamingFolder(folder)
-                                            }}
-                                            onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
-                                            onDragOver={(e) => {
-                                                e.preventDefault()
-                                                e.stopPropagation()
-                                                handleDragEnterFolder(folder.id)
-                                            }}
-                                            onDragLeave={handleDragLeaveFolder}
-                                            onDrop={(e) => {
-                                                e.preventDefault()
-                                                e.stopPropagation()
-                                                handleDropOnFolder(folder.id)
-                                            }}
-                                            className={cn(
-                                                "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
-                                                activeFolderId === folder.id
-                                                    ? "bg-secondary/50 text-foreground"
-                                                    : "text-foreground hover:bg-accent",
-                                                draggedFolder === folder.id && "opacity-50",
-                                                dragOverFolder === folder.id && draggedFolder && "border-t-2 border-t-foreground",
-                                                dragOverFolder === folder.id && !draggedFolder && "bg-muted ring-2 ring-border"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-1 flex-1">
-                                                {folder.isExpanded ? (
-                                                    <ChevronDown className="h-4 w-4 shrink-0" />
-                                                ) : (
-                                                    <ChevronRight className="h-4 w-4 shrink-0" />
-                                                )}
-                                                {folder.isExpanded ? (
-                                                    <FolderOpen className="h-4 w-4 shrink-0" />
-                                                ) : (
-                                                    <Folder className="h-4 w-4 shrink-0" />
-                                                )}
-                                                {editingFolderId === folder.id ? (
-                                                    <input
-                                                        autoFocus
-                                                        value={editingFolderName}
-                                                        onChange={(e) => setEditingFolderName(e.target.value)}
-                                                        onBlur={() => { setTimeout(() => finishRenamingFolder(folder.id), 150) }}
-                                                        onKeyDown={(e) => handleRenameFolderKeyDown(e, folder.id)}
-                                                        className="flex-1 bg-background px-1 text-foreground outline-none rounded"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        onDoubleClick={(e) => e.stopPropagation()}
-                                                    />
-                                                ) : (
-                                                    <span className="truncate flex-1">{folder.name}</span>
-                                                )}
-                                            </div>
-                                            <button
-                                                onClick={(e) => deleteFolder(folder.id, e)}
-                                                className="opacity-0 group-hover:opacity-100 rounded p-0.5 hover:bg-destructive/10"
-                                                aria-label="Delete folder"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </div>
-
-                                        {folder.isExpanded && (
-                                            <div className="ml-4 space-y-1">
-                                                {getFilesInFolder(folder.id).map(renderFileItem)}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                {/* Root-level folders (recursive render) */}
+                                {getSubfolders(null).map(folder => renderFolder(folder))}
 
                                 {/* Root level files (no folder) */}
                                 <div

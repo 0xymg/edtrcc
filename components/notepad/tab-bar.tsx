@@ -54,7 +54,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             <button
                 onClick={createNewTab}
                 className="flex h-full items-center px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                title={`New file (${typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘J' : 'Ctrl+J'})`}
+                title={`New file (${typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘T' : 'Ctrl+T'})`}
                 aria-label="New tab"
             >
                 <Plus className="h-4 w-4" />

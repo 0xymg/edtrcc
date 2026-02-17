@@ -59,6 +59,7 @@ export interface FolderItem {
   name: string
   isExpanded: boolean
   source?: "memory" | "filesystem"
+  parentFolderId?: string | null
 }
 
 // Register languages
@@ -681,11 +682,17 @@ export function Notepad() {
           folderCounter++
           const subFolderId = `folder-${folderCounter}`
           subfolderMap.set(entry.relativePath, subFolderId)
+          // Determine parent: if path has "/" parent is that folder, else it's the root folder
+          const dirParentPath = entry.relativePath.includes("/")
+            ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf("/"))
+            : null
+          const dirParentFolderId = dirParentPath ? subfolderMap.get(dirParentPath) || folderId : folderId
           newFolders.push({
             id: subFolderId,
             name: entry.name,
             isExpanded: false,
             source: "filesystem",
+            parentFolderId: dirParentFolderId,
           })
           dirHandleMapRef.current.set(subFolderId, entry.handle as FileSystemDirectoryHandle)
         } else {
@@ -851,7 +858,9 @@ export function Notepad() {
       const isCmd = e.ctrlKey || e.metaKey
       if (isCmd && e.shiftKey && e.key === "s") { e.preventDefault(); downloadFile(); return }
       if (isCmd && e.key === "s") { e.preventDefault(); saveFile() }
+      if (isCmd && e.key === "t") { e.preventDefault(); createNewTab() }
       if (isCmd && e.key === "j") { e.preventDefault(); createNewTab() }
+      if (isCmd && e.key === "w") { e.preventDefault(); if (activeTabId) closeTab(activeTabId, e) }
       if (isCmd && e.key === "k") { e.preventDefault(); if (activeTabId) closeTab(activeTabId, e) }
       if (isCmd && e.key === "l") { e.preventDefault(); setSidebarOpen(prev => !prev) }
       if (e.shiftKey && e.altKey && e.key === "F") { e.preventDefault(); formatCode() }

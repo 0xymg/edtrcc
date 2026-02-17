@@ -44,7 +44,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
                             <div className="flex items-center justify-center gap-2">
                                 <span>New File:</span>
                                 <Kbd>{typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</Kbd>
-                                <Kbd>J</Kbd>
+                                <Kbd>T</Kbd>
                             </div>
                             <div className="flex items-center justify-center gap-2">
                                 <span>Save:</span>
@@ -63,36 +63,42 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         )
     }
 
+    const lines = (activeTab?.content || "").split("\n")
+
     return (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-auto">
+            {/* Line numbers — scroll with the content */}
             <div className="w-12 shrink-0 select-none border-r border-border bg-card py-3 text-right font-mono text-xs text-muted-foreground">
-                {(activeTab?.content || "").split("\n").map((_, i) => (
+                {lines.map((_, i) => (
                     <div key={i} className="px-2 leading-6">
                         {i + 1}
                     </div>
                 ))}
-                {!(activeTab?.content) && (
-                    <div className="px-2 leading-6">1</div>
-                )}
             </div>
 
-            <div className="relative flex-1 overflow-auto">
-                {activeTab?.language !== "plaintext" && activeTab?.content && (
-                    <pre
-                        className="pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre-wrap break-words p-3 font-mono text-sm leading-6"
-                        aria-hidden="true"
-                        dangerouslySetInnerHTML={{
-                            __html: getHighlightedCode(activeTab.content, activeTab.language)
-                        }}
-                    />
-                )}
+            {/* Editor: grid layering so pre and textarea share the same cell and grow together */}
+            <div className="flex-1 min-w-0 min-h-full" style={{ display: "grid" }}>
+                <pre
+                    className={cn(
+                        "col-start-1 row-start-1 m-0 w-full whitespace-pre-wrap break-words p-3 font-mono text-sm leading-6",
+                        activeTab?.language !== "plaintext" && activeTab?.content
+                            ? "pointer-events-none"
+                            : "invisible pointer-events-none"
+                    )}
+                    aria-hidden="true"
+                    dangerouslySetInnerHTML={{
+                        __html: activeTab?.language !== "plaintext" && activeTab?.content
+                            ? getHighlightedCode(activeTab.content, activeTab.language)
+                            : (activeTab?.content || " ")
+                    }}
+                />
                 <textarea
                     ref={textareaRef}
                     value={activeTab?.content || ""}
                     onChange={(e) => updateContent(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className={cn(
-                        "absolute inset-0 h-full w-full resize-none bg-transparent p-3 font-mono text-sm leading-6 outline-none placeholder:text-muted-foreground",
+                        "col-start-1 row-start-1 resize-none bg-transparent p-3 font-mono text-sm leading-6 outline-none overflow-hidden w-full placeholder:text-muted-foreground",
                         activeTab?.language !== "plaintext" && activeTab?.content
                             ? "text-transparent caret-foreground"
                             : "text-foreground"

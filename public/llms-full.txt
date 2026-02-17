@@ -1,0 +1,148 @@
+# EDTR - Full Documentation
+
+> Free online notepad and code editor. Notepad++ speed in your browser.
+
+Website: https://edtr.cc
+Editor: https://edtr.cc/notepad
+GitHub: https://github.com/0xymg/edtrcc
+
+---
+
+## What is EDTR?
+
+EDTR is a free online notepad and code editor that works directly in your browser. It is inspired by Notepad++ and built for people who want a fast, simple text editor without downloading any software. You can use EDTR to write quick notes, draft documents, edit code snippets, keep to-do lists, or work on any kind of plain text file.
+
+There is no account to create and no sign-up process. You open the website, start typing, and your work is automatically saved to your browser's LocalStorage. If you close the tab or shut down your computer, your notes will still be there when you come back. EDTR does not upload anything to a server. Your data stays on your device at all times.
+
+---
+
+## Features
+
+### Syntax Highlighting
+EDTR highlights your code with proper colors as you type. It supports over 20 languages including JavaScript, TypeScript, Python, HTML, CSS, JSON, Go, Rust, C, C++, Java, PHP, Ruby, Swift, Kotlin, SQL, Bash, Markdown, YAML, and XML. You can select the language from the status bar at the bottom of the editor.
+
+### Multi-tab Editing
+You can open multiple files in separate tabs, just like in Notepad++ or any desktop code editor. Each tab has its own content, language setting, and file name. Use ⌘T to create a new tab and ⌘W to close the current tab.
+
+### Automatic Saving
+Your notes are saved automatically to your browser's LocalStorage after every change. You do not need to press a save button. If you close the browser and open EDTR again later, all your tabs and content will be restored exactly as you left them.
+
+### No Login Required
+EDTR does not require you to create an account or log in. There are no user accounts, no email verification, and no passwords. You can start using the editor immediately without any sign-up process.
+
+### Open Files From Your Computer
+On supported browsers (Chrome, Edge), you can open individual files or entire folders from your local file system using the File System Access API. You can edit these files in the browser and save your changes directly back to disk with ⌘S.
+
+### Works Offline as a PWA
+EDTR can be installed as a Progressive Web App. Once installed, it works without an internet connection. You can also set it as the default app for opening text files on your operating system.
+
+### Private and Secure
+All your data is stored locally on your device. EDTR does not send your content to any server. There is no tracking, no analytics on your text, and no third-party access to your notes.
+
+### Dark and Light Theme
+EDTR supports both dark and light themes. You can switch between them from the editor. The status bar color can also be customized with a built-in color picker.
+
+### Code Formatting
+EDTR supports code formatting for JSON files. Press Shift+Alt+F to format your JSON code.
+
+### Word and Character Count
+The status bar shows real-time line count, word count, and character count as you type.
+
+### File Export
+You can download your files as .txt files using ⌘⇧S. You can also export all your open tabs as a zip file.
+
+---
+
+## How to Use EDTR
+
+1. Open the editor: Go to edtr.cc/notepad in any modern browser. The editor loads instantly.
+2. Start typing: You can begin writing immediately. Your content is saved automatically.
+3. Create multiple tabs: Press ⌘T (or Ctrl+T on Windows) to open a new tab.
+4. Choose a language: Click the language selector in the bottom status bar to enable syntax highlighting.
+5. Open files from your computer: On Chrome and Edge, use the sidebar buttons to open files or folders from your disk.
+6. Install as an app: Install EDTR as a PWA from your browser for offline access.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| ⌘T | Open a new tab |
+| ⌘W | Close the current tab |
+| ⌘S | Save file |
+| ⌘⇧S | Download file |
+| ⌘L | Toggle sidebar |
+| ⌘/ | Toggle comment |
+| ⇧⌥F | Format code (JSON) |
+| Tab | Insert indentation |
+
+On Windows and Linux, use Ctrl instead of ⌘.
+
+---
+
+## Supported Programming Languages
+
+JavaScript, TypeScript, Python, HTML, CSS, JSON, Markdown, Bash, SQL, Java, C, C++, C#, Go, Rust, PHP, Ruby, Swift, Kotlin, YAML, XML
+
+Syntax highlighting is powered by highlight.js.
+
+---
+
+## Who Can Use EDTR?
+
+- Developers who need to quickly edit or review code snippets without opening a full IDE.
+- Students who want to take notes, draft assignments, or organize study material.
+- Writers and bloggers who need a clean writing environment without formatting distractions.
+- Researchers who need to collect notes from different sources while browsing.
+- Anyone who needs a quick notepad while using the internet.
+
+---
+
+## Technical Stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- highlight.js (syntax highlighting)
+- Shadcn/UI + Radix UI (components)
+- react-colorful (color picker)
+- JSZip (file export)
+- File System Access API (open/save local files)
+- HTML5 LocalStorage API (data persistence)
+- Service Worker (offline PWA support)
+
+---
+
+## Project Structure
+
+- Landing Page: https://edtr.cc (or root /)
+- Editor: https://edtr.cc/notepad
+- Manifest: https://edtr.cc/manifest
+- Service Worker: https://edtr.cc/sw.js
+
+## Data Storage
+
+EDTR stores all data in the browser's LocalStorage. The following keys are used:
+- notepad-tabs: Array of tab objects (id, name, content, language, isModified)
+- notepad-folders: Array of folder objects (id, name, isExpanded)
+- notepad-active-tab: ID of the currently active tab
+- notepad-sidebar-open: Boolean for sidebar visibility
+- notepad-status-bar-color: Custom status bar background color
+- notepad-status-bar-text-color: Custom status bar text color
+
+Files opened from the file system are not stored in LocalStorage. They use the File System Access API handles which are session-only.
+
+---
+
+## Open Source
+
+EDTR is free and open source software licensed under MIT. The source code is available at:
+https://github.com/0xymg/edtrcc
+
+Contributions, bug reports, and feature requests are welcome.
+
+---
+
+Disclaimer: EDTR stores notes in your browser's LocalStorage. Clearing browser cache or storage will delete your notes. Export important files regularly. EDTR is not affiliated with Notepad++ or any other text editor.
