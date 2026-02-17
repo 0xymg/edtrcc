@@ -127,6 +127,8 @@ export function Notepad() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const languageMenuRef = useRef<HTMLDivElement>(null)
   const languageButtonRef = useRef<HTMLButtonElement>(null)
+  const editingNameRef = useRef("")
+  const editingFolderNameRef = useRef("")
 
   // Actions
   const createNewTab = useCallback(() => {
@@ -210,28 +212,34 @@ export function Notepad() {
   }, [activeTabId])
 
   const startRenaming = useCallback((tab: Tab) => {
+    editingNameRef.current = tab.name
     setEditingTabId(tab.id)
     setEditingName(tab.name)
   }, [])
 
+  const updateEditingName = useCallback((name: string) => {
+    editingNameRef.current = name
+    setEditingName(name)
+  }, [])
+
   const finishRenaming = useCallback((tabId: string) => {
-    if (editingName.trim()) {
+    const name = editingNameRef.current
+    if (name === "" && !editingNameRef.current) return
+    if (name.trim()) {
       setTabs(prev => prev.map(tab =>
-        tab.id === tabId ? { ...tab, name: editingName.trim() } : tab
+        tab.id === tabId ? { ...tab, name: name.trim() } : tab
       ))
     }
+    editingNameRef.current = ""
     setEditingTabId(null)
     setEditingName("")
-  }, [editingName])
-
-  const handleTabDoubleClick = useCallback((e: React.MouseEvent, tab: Tab) => {
-    e.stopPropagation()
-    startRenaming(tab)
-  }, [startRenaming])
+  }, [])
 
   const handleRenameKeyDown = useCallback((e: React.KeyboardEvent, tabId: string) => {
+    e.stopPropagation()
     if (e.key === "Enter") finishRenaming(tabId)
     else if (e.key === "Escape") {
+      editingNameRef.current = ""
       setEditingTabId(null)
       setEditingName("")
     }
@@ -245,6 +253,7 @@ export function Notepad() {
       isExpanded: true
     }
     setFolders(prev => [...prev, newFolder])
+    editingFolderNameRef.current = newFolder.name
     setEditingFolderId(newFolder.id)
     setEditingFolderName(newFolder.name)
   }, [])
@@ -264,23 +273,33 @@ export function Notepad() {
   }, [])
 
   const startRenamingFolder = useCallback((folder: FolderItem) => {
+    editingFolderNameRef.current = folder.name
     setEditingFolderId(folder.id)
     setEditingFolderName(folder.name)
   }, [])
 
+  const updateEditingFolderName = useCallback((name: string) => {
+    editingFolderNameRef.current = name
+    setEditingFolderName(name)
+  }, [])
+
   const finishRenamingFolder = useCallback((folderId: string) => {
-    if (editingFolderName.trim()) {
+    const name = editingFolderNameRef.current
+    if (name.trim()) {
       setFolders(prev => prev.map(folder =>
-        folder.id === folderId ? { ...folder, name: editingFolderName.trim() } : folder
+        folder.id === folderId ? { ...folder, name: name.trim() } : folder
       ))
     }
+    editingFolderNameRef.current = ""
     setEditingFolderId(null)
     setEditingFolderName("")
-  }, [editingFolderName])
+  }, [])
 
   const handleRenameFolderKeyDown = useCallback((e: React.KeyboardEvent, folderId: string) => {
+    e.stopPropagation()
     if (e.key === "Enter") finishRenamingFolder(folderId)
     else if (e.key === "Escape") {
+      editingFolderNameRef.current = ""
       setEditingFolderId(null)
       setEditingFolderName("")
     }
@@ -629,12 +648,6 @@ export function Notepad() {
         activeTabId={activeTabId}
         setActiveTabId={setActiveTabId}
         handleTabBarDoubleClick={() => createNewTab()}
-        handleTabDoubleClick={handleTabDoubleClick}
-        editingTabId={editingTabId}
-        editingName={editingName}
-        setEditingName={setEditingName}
-        finishRenaming={finishRenaming}
-        handleRenameKeyDown={handleRenameKeyDown}
         createNewTab={createNewTab}
         closeTab={closeTab}
       />
@@ -654,9 +667,15 @@ export function Notepad() {
           startRenamingFolder={startRenamingFolder}
           editingFolderId={editingFolderId}
           editingFolderName={editingFolderName}
-          setEditingFolderName={setEditingFolderName}
+          setEditingFolderName={updateEditingFolderName}
           finishRenamingFolder={finishRenamingFolder}
           handleRenameFolderKeyDown={handleRenameFolderKeyDown}
+          editingTabId={editingTabId}
+          editingName={editingName}
+          setEditingName={updateEditingName}
+          finishRenaming={finishRenaming}
+          handleRenameKeyDown={handleRenameKeyDown}
+          startRenaming={startRenaming}
           handleDragStart={handleDragStart}
           handleDragEnd={handleDragEnd}
           handleDragOver={handleDragOver}

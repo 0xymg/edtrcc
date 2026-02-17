@@ -8,12 +8,6 @@ interface TabBarProps {
     activeTabId: string | null
     setActiveTabId: (id: string) => void
     handleTabBarDoubleClick: () => void
-    handleTabDoubleClick: (e: React.MouseEvent, tab: Tab) => void
-    editingTabId: string | null
-    editingName: string
-    setEditingName: (name: string) => void
-    finishRenaming: (id: string) => void
-    handleRenameKeyDown: (e: React.KeyboardEvent, id: string) => void
     createNewTab: () => void
     closeTab: (tabId: string, e?: React.MouseEvent | KeyboardEvent) => void
 }
@@ -23,12 +17,6 @@ export const TabBar: React.FC<TabBarProps> = ({
     activeTabId,
     setActiveTabId,
     handleTabBarDoubleClick,
-    handleTabDoubleClick,
-    editingTabId,
-    editingName,
-    setEditingName,
-    finishRenaming,
-    handleRenameKeyDown,
     createNewTab,
     closeTab
 }) => {
@@ -39,7 +27,6 @@ export const TabBar: React.FC<TabBarProps> = ({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTabId(tab.id)}
-                        onDoubleClick={(e) => handleTabDoubleClick(e, tab)}
                         className={cn(
                             "group flex items-center gap-2 border-r border-border px-3 py-2 text-sm transition-colors",
                             tab.id === activeTabId
@@ -48,19 +35,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                         )}
                     >
                         <FileText className="h-4 w-4 shrink-0" />
-                        {editingTabId === tab.id ? (
-                            <input
-                                autoFocus
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                onBlur={() => finishRenaming(tab.id)}
-                                onKeyDown={(e) => handleRenameKeyDown(e, tab.id)}
-                                className="max-w-32 truncate bg-background px-1 text-foreground outline-none"
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                        ) : (
-                            <span className="max-w-32 truncate">{tab.name}</span>
-                        )}
+                        <span className="max-w-32 truncate">{tab.name}</span>
                         {tab.isModified && (
                             <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
                         )}
