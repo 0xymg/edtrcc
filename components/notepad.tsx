@@ -128,6 +128,7 @@ export function Notepad() {
   const [theme, setTheme] = useState<"light" | "dark">("light")
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarWidth, setSidebarWidth] = useState(240)
   const [folders, setFolders] = useState<FolderItem[]>([])
   const [draggedTab, setDraggedTab] = useState<string | null>(null)
   const [draggedFolder, setDraggedFolder] = useState<string | null>(null)
@@ -430,6 +431,26 @@ export function Notepad() {
 
   const closeContextMenu = useCallback(() => setContextMenu(null), [])
 
+  const handleSidebarResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sidebarWidth
+    const onMouseMove = (ev: MouseEvent) => {
+      const newWidth = Math.min(384, Math.max(128, startWidth + (ev.clientX - startX)))
+      setSidebarWidth(newWidth)
+    }
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove)
+      document.removeEventListener("mouseup", onMouseUp)
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+    }
+    document.body.style.cursor = "col-resize"
+    document.body.style.userSelect = "none"
+    document.addEventListener("mousemove", onMouseMove)
+    document.addEventListener("mouseup", onMouseUp)
+  }, [sidebarWidth])
+
   const changeLanguage = useCallback((languageId: string) => {
     setTabs(prev => prev.map(tab =>
       tab.id === activeTabId ? { ...tab, language: languageId } : tab
@@ -688,48 +709,60 @@ export function Notepad() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          tabs={tabs}
-          folders={folders}
-          activeTabId={activeTabId}
-          setActiveTabId={setActiveTabId}
-          createNewTab={createNewTab}
-          createNewFolder={createNewFolder}
-          toggleFolder={toggleFolder}
-          deleteFolder={deleteFolder}
-          startRenamingFolder={startRenamingFolder}
-          editingFolderId={editingFolderId}
-          editingFolderName={editingFolderName}
-          setEditingFolderName={updateEditingFolderName}
-          finishRenamingFolder={finishRenamingFolder}
-          handleRenameFolderKeyDown={handleRenameFolderKeyDown}
-          editingTabId={editingTabId}
-          editingName={editingName}
-          setEditingName={updateEditingName}
-          finishRenaming={finishRenaming}
-          handleRenameKeyDown={handleRenameKeyDown}
-          startRenaming={startRenaming}
-          handleDragStart={handleDragStart}
-          handleDragEnd={handleDragEnd}
-          handleDragOver={handleDragOver}
-          handleDragOverTab={handleDragOverTab}
-          handleDragLeaveTab={handleDragLeaveTab}
-          handleDropOutsideFolder={handleDropOutsideFolder}
-          handleDropOnTab={handleDropOnTab}
-          handleContextMenu={handleContextMenu}
-          handleFolderContextMenu={handleFolderContextMenu}
-          handleDragEnterFolder={handleDragEnterFolder}
-          handleDragLeaveFolder={handleDragLeaveFolder}
-          handleDropOnFolder={handleDropOnFolder}
-          handleFolderDragStart={handleFolderDragStart}
-          draggedFolder={draggedFolder}
-          dragOverFolder={dragOverFolder}
-          dragOverTab={dragOverTab}
-        />
-
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {sidebarOpen && (
+          <>
+            <div
+              style={{ width: sidebarWidth }}
+              className="min-w-32 max-w-96 shrink-0"
+            >
+              <Sidebar
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen}
+                tabs={tabs}
+                folders={folders}
+                activeTabId={activeTabId}
+                setActiveTabId={setActiveTabId}
+                createNewTab={createNewTab}
+                createNewFolder={createNewFolder}
+                toggleFolder={toggleFolder}
+                deleteFolder={deleteFolder}
+                startRenamingFolder={startRenamingFolder}
+                editingFolderId={editingFolderId}
+                editingFolderName={editingFolderName}
+                setEditingFolderName={updateEditingFolderName}
+                finishRenamingFolder={finishRenamingFolder}
+                handleRenameFolderKeyDown={handleRenameFolderKeyDown}
+                editingTabId={editingTabId}
+                editingName={editingName}
+                setEditingName={updateEditingName}
+                finishRenaming={finishRenaming}
+                handleRenameKeyDown={handleRenameKeyDown}
+                startRenaming={startRenaming}
+                handleDragStart={handleDragStart}
+                handleDragEnd={handleDragEnd}
+                handleDragOver={handleDragOver}
+                handleDragOverTab={handleDragOverTab}
+                handleDragLeaveTab={handleDragLeaveTab}
+                handleDropOutsideFolder={handleDropOutsideFolder}
+                handleDropOnTab={handleDropOnTab}
+                handleContextMenu={handleContextMenu}
+                handleFolderContextMenu={handleFolderContextMenu}
+                handleDragEnterFolder={handleDragEnterFolder}
+                handleDragLeaveFolder={handleDragLeaveFolder}
+                handleDropOnFolder={handleDropOnFolder}
+                handleFolderDragStart={handleFolderDragStart}
+                draggedFolder={draggedFolder}
+                dragOverFolder={dragOverFolder}
+                dragOverTab={dragOverTab}
+              />
+            </div>
+            <div
+              className="relative w-px shrink-0 cursor-col-resize bg-border after:absolute after:inset-y-0 after:-left-1 after:-right-1 after:content-[''] hover:bg-primary/50 active:bg-primary/50 transition-colors"
+              onMouseDown={handleSidebarResize}
+            />
+          </>
+        )}
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
           <EditorArea
             activeTab={activeTab}
             tabs={tabs}

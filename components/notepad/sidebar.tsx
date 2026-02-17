@@ -149,12 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
 
     return (
-        <div className={cn(
-            "flex flex-col border-r border-border bg-card transition-all duration-300",
-            sidebarOpen ? "w-64" : "w-0"
-        )}>
-            {sidebarOpen && (
-                <>
+        <div className="flex h-full flex-col bg-card">
                     <div className="flex items-center justify-between border-b border-border px-3 py-2">
                         <h2 className="text-sm font-semibold text-foreground">Files</h2>
                         <div className="flex items-center gap-1">
@@ -283,8 +278,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             </div>
                         </div>
                     </div>
-                </>
-            )}
         </div>
     )
 }
