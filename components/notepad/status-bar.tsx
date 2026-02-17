@@ -93,6 +93,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         setStatusBarTextColor("")
     }
 
+    const hoverClass = hasCustomColors ? "hover:bg-white/15" : "hover:bg-accent"
+
     const customStyle: React.CSSProperties = {}
     if (statusBarColor) customStyle.backgroundColor = statusBarColor
     if (statusBarTextColor) customStyle.color = statusBarTextColor
@@ -105,7 +107,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             <div className="flex items-center gap-2 sm:gap-4">
                 <button
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="rounded p-1 transition-colors hover:bg-accent"
+                    className={cn("rounded p-1 transition-colors", hoverClass)}
                     title={`${sidebarOpen ? "Hide" : "Show"} sidebar (${typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘L' : 'Ctrl+L'})`}
                     aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
                 >
@@ -148,7 +150,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     onClick={formatCode}
                     disabled={isFormatting || activeTab?.language === "plaintext"}
                     className={cn(
-                        "flex items-center gap-1 rounded p-1 sm:px-2 sm:py-0.5 transition-colors hover:bg-accent",
+                        `flex items-center gap-1 rounded p-1 sm:px-2 sm:py-0.5 transition-colors ${hoverClass}`,
                         (isFormatting || activeTab?.language === "plaintext") && "cursor-not-allowed opacity-50"
                     )}
                     title="Format code (Prettier)"
@@ -165,7 +167,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                             e.stopPropagation()
                             setLanguageMenuOpen(!languageMenuOpen)
                         }}
-                        className="flex items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-accent"
+                        className={cn("flex items-center gap-1 rounded px-1 py-0.5 transition-colors", hoverClass)}
                     >
                         <span className="max-w-[60px] truncate">{languages.find(l => l.id === activeTab?.language)?.name || "Text"}</span>
                         <ChevronDown className="h-3 w-3" />
@@ -197,7 +199,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                 <div className="flex items-center gap-0.5 sm:gap-1">
                     <button
                         onClick={saveToLocalStorage}
-                        className="rounded p-1 transition-colors hover:bg-accent"
+                        className={cn("rounded p-1 transition-colors", hoverClass)}
                         title="Save (Ctrl+S / Cmd+S)"
                         aria-label="Save document"
                     >
@@ -205,7 +207,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     </button>
                     <button
                         onClick={downloadFile}
-                        className="rounded p-1 transition-colors hover:bg-accent"
+                        className={cn("rounded p-1 transition-colors", hoverClass)}
                         title="Download file (Ctrl+Shift+S / Cmd+Shift+S)"
                         aria-label="Download file"
                     >
@@ -214,7 +216,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     <Popover>
                         <PopoverTrigger asChild>
                             <button
-                                className="relative rounded p-1 transition-colors hover:bg-accent"
+                                className={cn("relative rounded p-1 transition-colors", hoverClass)}
                                 title="Status bar colors"
                                 aria-label="Customize status bar colors"
                             >
@@ -332,7 +334,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     </Popover>
                     <button
                         onClick={toggleTheme}
-                        className="rounded p-1 transition-colors hover:bg-accent"
+                        className={cn("rounded p-1 transition-colors", hoverClass)}
                         aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
                     >
                         {theme === "light" ? (
