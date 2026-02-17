@@ -1,5 +1,5 @@
 import React, { RefObject } from "react"
-import { Menu, Wand2, ChevronDown, Check, Save, Printer, Moon, Sun } from "lucide-react"
+import { Menu, Wand2, ChevronDown, Check, Save, Download, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab } from "../notepad"
 
@@ -19,6 +19,7 @@ interface StatusBarProps {
     changeLanguage: (id: string) => void
     languageMenuRef: RefObject<HTMLDivElement | null>
     saveToLocalStorage: () => void
+    downloadFile: () => void
     handlePrint: () => void
     toggleTheme: () => void
     theme: "light" | "dark"
@@ -40,6 +41,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     changeLanguage,
     languageMenuRef,
     saveToLocalStorage,
+    downloadFile,
     handlePrint,
     toggleTheme,
     theme
@@ -143,6 +145,14 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                         aria-label="Save document"
                     >
                         <Save className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={downloadFile}
+                        className="rounded p-1 transition-colors hover:bg-accent"
+                        title="Download file (Ctrl+Shift+S / Cmd+Shift+S)"
+                        aria-label="Download file"
+                    >
+                        <Download className="h-4 w-4" />
                     </button>
                     <button
                         onClick={toggleTheme}

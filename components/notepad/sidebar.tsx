@@ -28,9 +28,12 @@ interface SidebarProps {
     handleDropOutsideFolder: (e: React.DragEvent) => void
     handleDropOnTab: (id: string, e: React.DragEvent) => void
     handleContextMenu: (e: React.MouseEvent, id: string) => void
+    handleFolderContextMenu: (e: React.MouseEvent, id: string) => void
     handleDragEnterFolder: (id: string) => void
     handleDragLeaveFolder: () => void
     handleDropOnFolder: (id: string) => void
+    handleFolderDragStart: (id: string) => void
+    draggedFolder: string | null
     dragOverFolder: string | null
     dragOverTab: string | null
 }
@@ -60,13 +63,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     handleDropOutsideFolder,
     handleDropOnTab,
     handleContextMenu,
+    handleFolderContextMenu,
     handleDragEnterFolder,
     handleDragLeaveFolder,
     handleDropOnFolder,
+    handleFolderDragStart,
+    draggedFolder,
     dragOverFolder,
     dragOverTab
 }) => {
     const getFilesInFolder = (folderId: string | null) => {
+        if (folderId === null) {
+            return tabs.filter(tab => !tab.folderId)
+        }
         return tabs.filter(tab => tab.folderId === folderId)
     }
 
@@ -110,44 +119,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-2">
                             <div className="space-y-1">
-                                {/* Root level files */}
-                                <div
-                                    onDragOver={handleDragOver}
-                                    onDrop={handleDropOutsideFolder}
-                                    className="min-h-[40px]"
-                                >
-                                    {getFilesInFolder(null).map(tab => (
-                                        <button
-                                            key={tab.id}
-                                            draggable
-                                            onDragStart={() => handleDragStart(tab.id)}
-                                            onDragEnd={handleDragEnd}
-                                            onDragOver={(e) => handleDragOverTab(tab.id, e)}
-                                            onDragLeave={handleDragLeaveTab}
-                                            onDrop={(e) => handleDropOnTab(tab.id, e)}
-                                            onClick={() => setActiveTabId(tab.id)}
-                                            onContextMenu={(e) => handleContextMenu(e, tab.id)}
-                                            className={cn(
-                                                "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
-                                                tab.id === activeTabId
-                                                    ? "bg-secondary text-foreground"
-                                                    : "text-foreground hover:bg-accent",
-                                                dragOverTab === tab.id && "border-b-2 border-muted-foreground"
-                                            )}
-                                        >
-                                            <FileText className="h-4 w-4 shrink-0" />
-                                            <span className="truncate flex-1">{tab.name}</span>
-                                            {tab.isModified && (
-                                                <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Folders */}
+                                {/* Folders first */}
                                 {folders.map(folder => (
                                     <div key={folder.id} className="space-y-1">
                                         <div
+                                            draggable
+                                            onDragStart={(e) => {
+                                                e.stopPropagation()
+                                                handleFolderDragStart(folder.id)
+                                            }}
+                                            onDragEnd={handleDragEnd}
                                             onClick={() => {
                                                 if (editingFolderId !== folder.id) {
                                                     toggleFolder(folder.id)
@@ -157,6 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                 e.stopPropagation()
                                                 startRenamingFolder(folder)
                                             }}
+                                            onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
                                             onDragOver={(e) => {
                                                 e.preventDefault()
                                                 e.stopPropagation()
@@ -171,7 +153,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                             className={cn(
                                                 "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
                                                 "text-foreground hover:bg-accent",
-                                                dragOverFolder === folder.id && "bg-muted ring-2 ring-border"
+                                                draggedFolder === folder.id && "opacity-50",
+                                                dragOverFolder === folder.id && draggedFolder && "border-t-2 border-t-foreground",
+                                                dragOverFolder === folder.id && !draggedFolder && "bg-muted ring-2 ring-border"
                                             )}
                                         >
                                             <div className="flex items-center gap-1 flex-1">
@@ -240,6 +224,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                         )}
                                     </div>
                                 ))}
+
+                                {/* Root level files (no folder) */}
+                                <div
+                                    onDragOver={handleDragOver}
+                                    onDrop={handleDropOutsideFolder}
+                                    className="min-h-[40px]"
+                                >
+                                    {getFilesInFolder(null).map(tab => (
+                                        <button
+                                            key={tab.id}
+                                            draggable
+                                            onDragStart={() => handleDragStart(tab.id)}
+                                            onDragEnd={handleDragEnd}
+                                            onDragOver={(e) => handleDragOverTab(tab.id, e)}
+                                            onDragLeave={handleDragLeaveTab}
+                                            onDrop={(e) => handleDropOnTab(tab.id, e)}
+                                            onClick={() => setActiveTabId(tab.id)}
+                                            onContextMenu={(e) => handleContextMenu(e, tab.id)}
+                                            className={cn(
+                                                "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
+                                                tab.id === activeTabId
+                                                    ? "bg-secondary text-foreground"
+                                                    : "text-foreground hover:bg-accent",
+                                                dragOverTab === tab.id && "border-b-2 border-muted-foreground"
+                                            )}
+                                        >
+                                            <FileText className="h-4 w-4 shrink-0" />
+                                            <span className="truncate flex-1">{tab.name}</span>
+                                            {tab.isModified && (
+                                                <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

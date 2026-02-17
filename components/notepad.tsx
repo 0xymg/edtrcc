@@ -116,9 +116,10 @@ export function Notepad() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [folders, setFolders] = useState<FolderItem[]>([])
   const [draggedTab, setDraggedTab] = useState<string | null>(null)
+  const [draggedFolder, setDraggedFolder] = useState<string | null>(null)
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null)
   const [dragOverTab, setDragOverTab] = useState<string | null>(null)
-  const [contextMenu, setContextMenu] = useState<{ tabId: string; x: number; y: number } | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ type: "tab" | "folder"; id: string; x: number; y: number } | null>(null)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [isFormatting, setIsFormatting] = useState(false)
   const [formatError, setFormatError] = useState<string | null>(null)
@@ -240,10 +241,12 @@ export function Notepad() {
     folderCounter++
     const newFolder: FolderItem = {
       id: `folder-${folderCounter}`,
-      name: `New Folder ${folderCounter}`,
+      name: `New Folder`,
       isExpanded: true
     }
     setFolders(prev => [...prev, newFolder])
+    setEditingFolderId(newFolder.id)
+    setEditingFolderName(newFolder.name)
   }, [])
 
   const toggleFolder = useCallback((folderId: string) => {
@@ -284,45 +287,82 @@ export function Notepad() {
   }, [finishRenamingFolder])
 
   // Drag & Drop
-  const handleDragStart = useCallback((tabId: string) => setDraggedTab(tabId), [])
+  const dragRef = useRef<{ type: "tab" | "folder"; id: string } | null>(null)
+
+  const handleDragStart = useCallback((tabId: string) => {
+    dragRef.current = { type: "tab", id: tabId }
+    setDraggedTab(tabId)
+  }, [])
+
+  const handleFolderDragStart = useCallback((folderId: string) => {
+    dragRef.current = { type: "folder", id: folderId }
+    setDraggedFolder(folderId)
+  }, [])
+
   const handleDragEnd = useCallback(() => {
+    dragRef.current = null
     setDraggedTab(null)
+    setDraggedFolder(null)
     setDragOverFolder(null)
     setDragOverTab(null)
   }, [])
+
   const handleDragOver = useCallback((e: React.DragEvent) => e.preventDefault(), [])
   const handleDragEnterFolder = useCallback((folderId: string) => setDragOverFolder(folderId), [])
   const handleDragLeaveFolder = useCallback(() => setDragOverFolder(null), [])
 
   const handleDropOnFolder = useCallback((folderId: string) => {
-    if (draggedTab) {
-      setTabs(prev => prev.map(tab => tab.id === draggedTab ? { ...tab, folderId } : tab))
-      setDraggedTab(null)
-      setDragOverFolder(null)
+    const drag = dragRef.current
+    if (!drag) return
+    if (drag.type === "folder" && drag.id !== folderId) {
+      const dragId = drag.id
+      setFolders(prev => {
+        const draggedIndex = prev.findIndex(f => f.id === dragId)
+        const targetIndex = prev.findIndex(f => f.id === folderId)
+        if (draggedIndex === -1 || targetIndex === -1) return prev
+        const newFolders = [...prev]
+        const [dragged] = newFolders.splice(draggedIndex, 1)
+        newFolders.splice(targetIndex, 0, dragged)
+        return newFolders
+      })
+    } else if (drag.type === "tab") {
+      const tabId = drag.id
+      setTabs(prev => prev.map(tab => tab.id === tabId ? { ...tab, folderId } : tab))
     }
-  }, [draggedTab])
+    dragRef.current = null
+    setDraggedTab(null)
+    setDraggedFolder(null)
+    setDragOverFolder(null)
+  }, [])
 
   const handleDropOutsideFolder = useCallback(() => {
-    if (draggedTab) {
-      setTabs(prev => prev.map(tab => tab.id === draggedTab ? { ...tab, folderId: null } : tab))
-      setDraggedTab(null)
-      setDragOverTab(null)
+    const drag = dragRef.current
+    if (drag?.type === "tab") {
+      const tabId = drag.id
+      setTabs(prev => prev.map(tab => tab.id === tabId ? { ...tab, folderId: null } : tab))
     }
-  }, [draggedTab])
+    dragRef.current = null
+    setDraggedTab(null)
+    setDraggedFolder(null)
+    setDragOverTab(null)
+  }, [])
 
   const handleDragOverTab = useCallback((tabId: string, e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (draggedTab && draggedTab !== tabId) setDragOverTab(tabId)
-  }, [draggedTab])
+    const drag = dragRef.current
+    if (drag?.type === "tab" && drag.id !== tabId) setDragOverTab(tabId)
+  }, [])
 
   const handleDragLeaveTab = useCallback(() => setDragOverTab(null), [])
 
   const handleDropOnTab = useCallback((targetTabId: string, e: React.DragEvent) => {
     e.stopPropagation()
-    if (draggedTab && draggedTab !== targetTabId) {
+    const drag = dragRef.current
+    if (drag?.type === "tab" && drag.id !== targetTabId) {
+      const tabId = drag.id
       setTabs(prev => {
-        const draggedIndex = prev.findIndex(t => t.id === draggedTab)
+        const draggedIndex = prev.findIndex(t => t.id === tabId)
         const targetIndex = prev.findIndex(t => t.id === targetTabId)
         if (draggedIndex === -1 || targetIndex === -1) return prev
         const newTabs = [...prev]
@@ -332,14 +372,22 @@ export function Notepad() {
         return newTabs
       })
     }
+    dragRef.current = null
     setDraggedTab(null)
+    setDraggedFolder(null)
     setDragOverTab(null)
-  }, [draggedTab])
+  }, [])
 
   const handleContextMenu = useCallback((e: React.MouseEvent, tabId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    setContextMenu({ tabId, x: e.clientX, y: e.clientY })
+    setContextMenu({ type: "tab", id: tabId, x: e.clientX, y: e.clientY })
+  }, [])
+
+  const handleFolderContextMenu = useCallback((e: React.MouseEvent, folderId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setContextMenu({ type: "folder", id: folderId, x: e.clientX, y: e.clientY })
   }, [])
 
   const closeContextMenu = useCallback(() => setContextMenu(null), [])
@@ -364,6 +412,27 @@ export function Notepad() {
     if (!content.trim()) return 0
     return content.trim().split(/\s+/).length
   }, [])
+
+  const downloadFile = useCallback(() => {
+    const activeTab = tabs.find(t => t.id === activeTabId)
+    if (!activeTab) return
+    const extensionMap: Record<string, string> = {
+      plaintext: "txt", javascript: "js", jsx: "jsx", typescript: "ts", tsx: "tsx",
+      python: "py", css: "css", html: "html", xml: "xml", json: "json",
+      markdown: "md", bash: "sh", sql: "sql", java: "java", c: "c",
+      cpp: "cpp", csharp: "cs", go: "go", rust: "rs", php: "php",
+      ruby: "rb", swift: "swift", kotlin: "kt", yaml: "yaml",
+    }
+    const ext = extensionMap[activeTab.language] || "txt"
+    const filename = activeTab.name.includes(".") ? activeTab.name : `${activeTab.name}.${ext}`
+    const blob = new Blob([activeTab.content], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [tabs, activeTabId])
 
   const handlePrint = useCallback(() => {
     const activeTab = tabs.find(t => t.id === activeTabId)
@@ -440,6 +509,20 @@ export function Notepad() {
     closeContextMenu()
   }, [tabs, startRenaming, closeContextMenu])
 
+  const renameFolderFromContext = useCallback((folderId: string) => {
+    const folder = folders.find(f => f.id === folderId)
+    if (folder) startRenamingFolder(folder)
+    closeContextMenu()
+  }, [folders, startRenamingFolder, closeContextMenu])
+
+  const deleteFolderFromContext = useCallback((folderId: string) => {
+    setTabs(prev => prev.map(tab =>
+      tab.folderId === folderId ? { ...tab, folderId: null } : tab
+    ))
+    setFolders(prev => prev.filter(f => f.id !== folderId))
+    closeContextMenu()
+  }, [closeContextMenu])
+
   // Effects
   useEffect(() => {
     const savedTabs = localStorage.getItem("notepad-tabs")
@@ -473,6 +556,7 @@ export function Notepad() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isCmd = e.ctrlKey || e.metaKey
+      if (isCmd && e.shiftKey && e.key === "s") { e.preventDefault(); downloadFile(); return }
       if (isCmd && e.key === "s") { e.preventDefault(); saveToLocalStorage() }
       if (isCmd && e.key === "j") { e.preventDefault(); createNewTab() }
       if (isCmd && e.key === "k") { e.preventDefault(); if (activeTabId) closeTab(activeTabId, e) }
@@ -481,7 +565,7 @@ export function Notepad() {
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [saveToLocalStorage, createNewTab, formatCode, activeTabId, closeTab])
+  }, [saveToLocalStorage, createNewTab, formatCode, activeTabId, closeTab, downloadFile])
 
   useEffect(() => {
     const handleClick = () => {
@@ -581,9 +665,12 @@ export function Notepad() {
           handleDropOutsideFolder={handleDropOutsideFolder}
           handleDropOnTab={handleDropOnTab}
           handleContextMenu={handleContextMenu}
+          handleFolderContextMenu={handleFolderContextMenu}
           handleDragEnterFolder={handleDragEnterFolder}
           handleDragLeaveFolder={handleDragLeaveFolder}
           handleDropOnFolder={handleDropOnFolder}
+          handleFolderDragStart={handleFolderDragStart}
+          draggedFolder={draggedFolder}
           dragOverFolder={dragOverFolder}
           dragOverTab={dragOverTab}
         />
@@ -607,8 +694,17 @@ export function Notepad() {
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={() => renameFileFromContext(contextMenu.tabId)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Edit2 className="h-4 w-4" /><span>Rename</span></button>
-          <button onClick={() => deleteFile(contextMenu.tabId)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"><Trash2 className="h-4 w-4" /><span>Delete</span></button>
+          {contextMenu.type === "tab" ? (
+            <>
+              <button onClick={() => renameFileFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Edit2 className="h-4 w-4" /><span>Rename</span></button>
+              <button onClick={() => deleteFile(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"><Trash2 className="h-4 w-4" /><span>Delete</span></button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => renameFolderFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Edit2 className="h-4 w-4" /><span>Rename</span></button>
+              <button onClick={() => deleteFolderFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"><Trash2 className="h-4 w-4" /><span>Delete</span></button>
+            </>
+          )}
         </div>
       )}
 
@@ -628,6 +724,7 @@ export function Notepad() {
         changeLanguage={changeLanguage}
         languageMenuRef={languageMenuRef}
         saveToLocalStorage={saveToLocalStorage}
+        downloadFile={downloadFile}
         handlePrint={handlePrint}
         toggleTheme={toggleTheme}
         theme={theme}
