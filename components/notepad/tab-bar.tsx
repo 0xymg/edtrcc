@@ -1,7 +1,8 @@
 import React from "react"
-import { FileText, Plus, X } from "lucide-react"
+import { Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab } from "../notepad"
+import { FileIcon } from "./file-icon"
 
 interface TabBarProps {
     tabs: Tab[]
@@ -34,7 +35,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                                 : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
                         )}
                     >
-                        <FileText className="h-4 w-4 shrink-0" />
+                        <FileIcon language={tab.language} />
                         <span className="max-w-32 truncate">{tab.name}</span>
                         {tab.isModified && (
                             <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />

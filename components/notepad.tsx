@@ -24,7 +24,8 @@ import ruby from "highlight.js/lib/languages/ruby"
 import swift from "highlight.js/lib/languages/swift"
 import kotlin from "highlight.js/lib/languages/kotlin"
 import yaml from "highlight.js/lib/languages/yaml"
-import { Edit2, Trash2 } from "lucide-react"
+import { Edit2, Trash2, Download } from "lucide-react"
+import JSZip from "jszip"
 
 // Import subcomponents
 import { Sidebar } from "./notepad/sidebar"
@@ -98,6 +99,19 @@ const LANGUAGES = [
   { id: "xml", name: "XML" },
 ]
 
+const EXTENSION_MAP: Record<string, string> = {
+  plaintext: "txt", javascript: "js", jsx: "jsx", typescript: "ts", tsx: "tsx",
+  python: "py", css: "css", html: "html", xml: "xml", json: "json",
+  markdown: "md", bash: "sh", sql: "sql", java: "java", c: "c",
+  cpp: "cpp", csharp: "cs", go: "go", rust: "rs", php: "php",
+  ruby: "rb", swift: "swift", kotlin: "kt", yaml: "yaml",
+}
+
+function getFilename(tab: Tab): string {
+  const ext = EXTENSION_MAP[tab.language] || "txt"
+  return tab.name.includes(".") ? tab.name : `${tab.name}.${ext}`
+}
+
 let tabCounter = 1
 let folderCounter = 0
 
@@ -142,6 +156,11 @@ export function Notepad() {
     }
     setTabs(prev => [...prev, newTab])
     setActiveTabId(newTab.id)
+    // Auto-start rename mode for new file (open sidebar if needed)
+    setSidebarOpen(true)
+    editingNameRef.current = newTab.name
+    setEditingTabId(newTab.id)
+    setEditingName(newTab.name)
   }, [])
 
   const saveToLocalStorage = useCallback(() => {
@@ -432,26 +451,42 @@ export function Notepad() {
     return content.trim().split(/\s+/).length
   }, [])
 
-  const downloadFile = useCallback(() => {
-    const activeTab = tabs.find(t => t.id === activeTabId)
-    if (!activeTab) return
-    const extensionMap: Record<string, string> = {
-      plaintext: "txt", javascript: "js", jsx: "jsx", typescript: "ts", tsx: "tsx",
-      python: "py", css: "css", html: "html", xml: "xml", json: "json",
-      markdown: "md", bash: "sh", sql: "sql", java: "java", c: "c",
-      cpp: "cpp", csharp: "cs", go: "go", rust: "rs", php: "php",
-      ruby: "rb", swift: "swift", kotlin: "kt", yaml: "yaml",
-    }
-    const ext = extensionMap[activeTab.language] || "txt"
-    const filename = activeTab.name.includes(".") ? activeTab.name : `${activeTab.name}.${ext}`
-    const blob = new Blob([activeTab.content], { type: "text/plain;charset=utf-8" })
+  const triggerDownload = useCallback((blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
-  }, [tabs, activeTabId])
+  }, [])
+
+  const downloadFile = useCallback(() => {
+    const activeTab = tabs.find(t => t.id === activeTabId)
+    if (!activeTab) return
+    const blob = new Blob([activeTab.content], { type: "text/plain;charset=utf-8" })
+    triggerDownload(blob, getFilename(activeTab))
+  }, [tabs, activeTabId, triggerDownload])
+
+  const downloadFileById = useCallback((tabId: string) => {
+    const tab = tabs.find(t => t.id === tabId)
+    if (!tab) return
+    const blob = new Blob([tab.content], { type: "text/plain;charset=utf-8" })
+    triggerDownload(blob, getFilename(tab))
+    closeContextMenu()
+  }, [tabs, triggerDownload, closeContextMenu])
+
+  const downloadFolderAsZip = useCallback(async (folderId: string) => {
+    const folder = folders.find(f => f.id === folderId)
+    if (!folder) return
+    const folderTabs = tabs.filter(t => t.folderId === folderId)
+    const zip = new JSZip()
+    folderTabs.forEach(tab => {
+      zip.file(getFilename(tab), tab.content)
+    })
+    const blob = await zip.generateAsync({ type: "blob" })
+    triggerDownload(blob, `${folder.name}.zip`)
+    closeContextMenu()
+  }, [folders, tabs, triggerDownload, closeContextMenu])
 
   const handlePrint = useCallback(() => {
     const activeTab = tabs.find(t => t.id === activeTabId)
@@ -716,11 +751,13 @@ export function Notepad() {
           {contextMenu.type === "tab" ? (
             <>
               <button onClick={() => renameFileFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Edit2 className="h-4 w-4" /><span>Rename</span></button>
+              <button onClick={() => downloadFileById(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Download className="h-4 w-4" /><span>Download</span></button>
               <button onClick={() => deleteFile(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"><Trash2 className="h-4 w-4" /><span>Delete</span></button>
             </>
           ) : (
             <>
               <button onClick={() => renameFolderFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Edit2 className="h-4 w-4" /><span>Rename</span></button>
+              <button onClick={() => downloadFolderAsZip(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent"><Download className="h-4 w-4" /><span>Download (.zip)</span></button>
               <button onClick={() => deleteFolderFromContext(contextMenu.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"><Trash2 className="h-4 w-4" /><span>Delete</span></button>
             </>
           )}

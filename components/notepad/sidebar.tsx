@@ -1,7 +1,8 @@
 import React from "react"
-import { Plus, X, Folder, FolderOpen, ChevronDown, ChevronRight, FileText } from "lucide-react"
+import { Plus, X, Folder, FolderOpen, ChevronDown, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab, FolderItem } from "../notepad"
+import { FileIcon } from "./file-icon"
 
 interface SidebarProps {
     sidebarOpen: boolean
@@ -84,6 +85,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     dragOverFolder,
     dragOverTab
 }) => {
+    const extensionMap: Record<string, string> = {
+        plaintext: ".txt", javascript: ".js", jsx: ".jsx", typescript: ".ts", tsx: ".tsx",
+        python: ".py", css: ".css", html: ".html", xml: ".xml", json: ".json",
+        markdown: ".md", bash: ".sh", sql: ".sql", java: ".java", c: ".c",
+        cpp: ".cpp", csharp: ".cs", go: ".go", rust: ".rs", php: ".php",
+        ruby: ".rb", swift: ".swift", kotlin: ".kt", yaml: ".yaml",
+    }
+
     const renderFileItem = (tab: Tab) => (
         <div
             key={tab.id}
@@ -97,14 +106,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onDoubleClick={(e) => { e.stopPropagation(); startRenaming(tab) }}
             onContextMenu={(e) => handleContextMenu(e, tab.id)}
             className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
+                "group/file w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left cursor-pointer relative",
                 tab.id === activeTabId
                     ? "bg-secondary text-foreground"
                     : "text-foreground hover:bg-accent",
                 dragOverTab === tab.id && "border-b-2 border-muted-foreground"
             )}
         >
-            <FileText className="h-4 w-4 shrink-0" />
+            <FileIcon language={tab.language} />
             {editingTabId === tab.id ? (
                 <input
                     autoFocus
@@ -117,13 +126,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onDoubleClick={(e) => e.stopPropagation()}
                 />
             ) : (
-                <span className="truncate flex-1">{tab.name}</span>
+                <span className="truncate flex-1">
+                    {tab.name}
+                    <span className="hidden group-hover/file:inline text-[11px] font-medium text-muted-foreground/60">
+                        {extensionMap[tab.language] || ".txt"}
+                    </span>
+                </span>
             )}
             {tab.isModified && (
                 <span className="h-2 w-2 shrink-0 rounded-full bg-foreground" />
             )}
         </div>
     )
+
+    const activeFolderId = tabs.find(tab => tab.id === activeTabId)?.folderId || null
 
     const getFilesInFolder = (folderId: string | null) => {
         if (folderId === null) {
@@ -205,7 +221,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                             }}
                                             className={cn(
                                                 "flex items-center justify-between gap-1 px-2 py-1.5 rounded text-sm transition-colors cursor-pointer group",
-                                                "text-foreground hover:bg-accent",
+                                                activeFolderId === folder.id
+                                                    ? "bg-secondary/50 text-foreground"
+                                                    : "text-foreground hover:bg-accent",
                                                 draggedFolder === folder.id && "opacity-50",
                                                 dragOverFolder === folder.id && draggedFolder && "border-t-2 border-t-foreground",
                                                 dragOverFolder === folder.id && !draggedFolder && "bg-muted ring-2 ring-border"
