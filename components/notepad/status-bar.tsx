@@ -219,12 +219,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                                 aria-label="Customize status bar colors"
                             >
                                 <Palette className="h-4 w-4" />
-                                {hasCustomColors && (
-                                    <span
-                                        className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-current/20"
-                                        style={{ backgroundColor: statusBarColor || statusBarTextColor }}
-                                    />
-                                )}
                             </button>
                         </PopoverTrigger>
                         <PopoverContent side="top" align="end" className="w-64 p-0">
