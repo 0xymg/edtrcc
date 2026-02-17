@@ -47,7 +47,8 @@ interface StatusBarProps {
     languages: { id: string; name: string }[]
     changeLanguage: (id: string) => void
     languageMenuRef: RefObject<HTMLDivElement | null>
-    saveToLocalStorage: () => void
+    save: () => void
+    isFileSystemTab: boolean
     downloadFile: () => void
     handlePrint: () => void
     toggleTheme: () => void
@@ -73,7 +74,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     languages,
     changeLanguage,
     languageMenuRef,
-    saveToLocalStorage,
+    save,
+    isFileSystemTab,
     downloadFile,
     handlePrint,
     toggleTheme,
@@ -198,10 +200,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
                     <button
-                        onClick={saveToLocalStorage}
+                        onClick={save}
                         className={cn("rounded p-1 transition-colors", hoverClass)}
-                        title="Save (Ctrl+S / Cmd+S)"
-                        aria-label="Save document"
+                        title={isFileSystemTab ? "Save to disk (Ctrl+S / Cmd+S)" : "Save (Ctrl+S / Cmd+S)"}
+                        aria-label={isFileSystemTab ? "Save to disk" : "Save document"}
                     >
                         <Save className="h-4 w-4" />
                     </button>

@@ -1,5 +1,5 @@
 import React from "react"
-import { Plus, X, Folder, FolderOpen, ChevronDown, ChevronRight } from "lucide-react"
+import { Plus, X, Folder, FolderOpen, ChevronDown, ChevronRight, FileUp, HardDrive } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab, FolderItem } from "../notepad"
 import { FileIcon } from "./file-icon"
@@ -43,6 +43,9 @@ interface SidebarProps {
     draggedFolder: string | null
     dragOverFolder: string | null
     dragOverTab: string | null
+    onOpenFile: () => void
+    onOpenFolder: () => void
+    supportsDirectoryPicker: boolean
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -83,7 +86,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     handleFolderDragStart,
     draggedFolder,
     dragOverFolder,
-    dragOverTab
+    dragOverTab,
+    onOpenFile,
+    onOpenFolder,
+    supportsDirectoryPicker
 }) => {
     const extensionMap: Record<string, string> = {
         plaintext: ".txt", javascript: ".js", jsx: ".jsx", typescript: ".ts", tsx: ".tsx",
@@ -110,7 +116,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 tab.id === activeTabId
                     ? "bg-secondary text-foreground"
                     : "text-foreground hover:bg-accent",
-                dragOverTab === tab.id && "border-b-2 border-muted-foreground"
+                dragOverTab === tab.id && "border-b-2 border-muted-foreground",
+                tab.source === "filesystem" && tab.contentLoaded === false && "opacity-60"
             )}
         >
             <FileIcon language={tab.language} />
@@ -153,6 +160,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex items-center justify-between border-b border-border px-3 py-2">
                         <h2 className="text-sm font-semibold text-foreground">Files</h2>
                         <div className="flex items-center gap-1">
+                            <button
+                                onClick={onOpenFile}
+                                className="rounded p-1 transition-colors hover:bg-accent"
+                                title="Open file from disk"
+                                aria-label="Open file from disk"
+                            >
+                                <FileUp className="h-4 w-4" />
+                            </button>
+                            {supportsDirectoryPicker && (
+                                <button
+                                    onClick={onOpenFolder}
+                                    className="rounded p-1 transition-colors hover:bg-accent"
+                                    title="Open folder from disk"
+                                    aria-label="Open folder from disk"
+                                >
+                                    <HardDrive className="h-4 w-4" />
+                                </button>
+                            )}
                             <button
                                 onClick={createNewFolder}
                                 className="rounded p-1 transition-colors hover:bg-accent"

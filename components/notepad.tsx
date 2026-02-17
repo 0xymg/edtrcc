@@ -26,6 +26,14 @@ import kotlin from "highlight.js/lib/languages/kotlin"
 import yaml from "highlight.js/lib/languages/yaml"
 import { Edit2, Trash2, Download } from "lucide-react"
 import JSZip from "jszip"
+import {
+  supportsFileSystemAccess,
+  detectLanguageFromExtension,
+  openFilePicker,
+  openDirectoryPicker,
+  readFileFromHandle,
+  writeFileToHandle,
+} from "@/lib/file-system"
 
 // Import subcomponents
 import { Sidebar } from "./notepad/sidebar"
@@ -41,12 +49,16 @@ export interface Tab {
   isModified: boolean
   folderId?: string | null
   language: string
+  source?: "memory" | "filesystem"
+  relativePath?: string
+  contentLoaded?: boolean
 }
 
 export interface FolderItem {
   id: string
   name: string
   isExpanded: boolean
+  source?: "memory" | "filesystem"
 }
 
 // Register languages
@@ -146,6 +158,8 @@ export function Notepad() {
   const languageButtonRef = useRef<HTMLButtonElement>(null)
   const editingNameRef = useRef("")
   const editingFolderNameRef = useRef("")
+  const fileHandleMapRef = useRef<Map<string, FileSystemFileHandle>>(new Map())
+  const dirHandleMapRef = useRef<Map<string, FileSystemDirectoryHandle>>(new Map())
 
   // Actions
   const createNewTab = useCallback(() => {
@@ -169,8 +183,11 @@ export function Notepad() {
   const saveToLocalStorage = useCallback(() => {
     setSaveStatus("saving")
     try {
-      localStorage.setItem("notepad-tabs", JSON.stringify(tabs))
-      localStorage.setItem("notepad-folders", JSON.stringify(folders))
+      // Only persist memory tabs to localStorage (filesystem tabs can't be restored without handles)
+      const memoryTabs = tabs.filter(t => !t.source || t.source === "memory")
+      const memoryFolders = folders.filter(f => !f.source || f.source === "memory")
+      localStorage.setItem("notepad-tabs", JSON.stringify(memoryTabs))
+      localStorage.setItem("notepad-folders", JSON.stringify(memoryFolders))
       setTabs(prev => prev.map(tab =>
         tab.id === activeTabId
           ? { ...tab, isModified: false }
@@ -219,13 +236,16 @@ export function Notepad() {
     setTabs(prev => prev.map(tab => {
       if (tab.id !== activeTabId) return tab
       let newName = tab.name
-      if (tab.name.startsWith("Untitled-") && content.trim()) {
-        const hasWordBreak = /[\s\n\r]/.test(content)
-        if (hasWordBreak) {
-          const firstWord = content.trim().split(/[\s\n\r]+/)[0]
-          if (firstWord && firstWord.length > 0 && firstWord.length <= 30) {
-            const cleanWord = firstWord.replace(/[^a-zA-Z0-9_\-\.]/g, "")
-            if (cleanWord.length > 0) newName = cleanWord
+      // Skip auto-rename for filesystem files
+      if (!tab.source || tab.source === "memory") {
+        if (tab.name.startsWith("Untitled-") && content.trim()) {
+          const hasWordBreak = /[\s\n\r]/.test(content)
+          if (hasWordBreak) {
+            const firstWord = content.trim().split(/[\s\n\r]+/)[0]
+            if (firstWord && firstWord.length > 0 && firstWord.length <= 30) {
+              const cleanWord = firstWord.replace(/[^a-zA-Z0-9_\-\.]/g, "")
+              if (cleanWord.length > 0) newName = cleanWord
+            }
           }
         }
       }
@@ -600,6 +620,146 @@ export function Notepad() {
     closeContextMenu()
   }, [closeContextMenu])
 
+  // File System Access API actions
+  const openFileFromDisk = useCallback(async () => {
+    try {
+      const results = await openFilePicker()
+      if (results.length === 0) return
+      const newTabs: Tab[] = []
+      for (const { handle, file } of results) {
+        const content = await file.text()
+        const lang = detectLanguageFromExtension(file.name)
+        const nameWithoutExt = file.name.replace(/\.[^.]+$/, "")
+        tabCounter++
+        const newTab: Tab = {
+          id: String(tabCounter),
+          name: nameWithoutExt,
+          content,
+          isModified: false,
+          language: lang,
+          source: handle ? "filesystem" : "memory",
+          contentLoaded: true,
+        }
+        if (handle) {
+          fileHandleMapRef.current.set(newTab.id, handle)
+        }
+        newTabs.push(newTab)
+      }
+      setTabs(prev => [...prev, ...newTabs])
+      if (newTabs.length > 0) {
+        setActiveTabId(newTabs[newTabs.length - 1].id)
+      }
+      setSidebarOpen(true)
+    } catch (e) {
+      console.error("Failed to open file:", e)
+    }
+  }, [])
+
+  const openFolderFromDisk = useCallback(async () => {
+    try {
+      const result = await openDirectoryPicker()
+      if (!result) return
+      const { dirHandle, entries } = result
+
+      folderCounter++
+      const folderId = `folder-${folderCounter}`
+      const newFolder: FolderItem = {
+        id: folderId,
+        name: dirHandle.name,
+        isExpanded: true,
+        source: "filesystem",
+      }
+      dirHandleMapRef.current.set(folderId, dirHandle)
+
+      // Create subfolder map for nested dirs
+      const subfolderMap = new Map<string, string>() // relativePath -> folderId
+      const newFolders: FolderItem[] = [newFolder]
+      const newTabs: Tab[] = []
+
+      for (const entry of entries) {
+        if (entry.kind === "directory") {
+          folderCounter++
+          const subFolderId = `folder-${folderCounter}`
+          subfolderMap.set(entry.relativePath, subFolderId)
+          newFolders.push({
+            id: subFolderId,
+            name: entry.name,
+            isExpanded: false,
+            source: "filesystem",
+          })
+          dirHandleMapRef.current.set(subFolderId, entry.handle as FileSystemDirectoryHandle)
+        } else {
+          tabCounter++
+          // Determine parent folder
+          const parentPath = entry.relativePath.includes("/")
+            ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf("/"))
+            : null
+          const parentFolderId = parentPath ? subfolderMap.get(parentPath) || folderId : folderId
+
+          const nameWithoutExt = entry.name.replace(/\.[^.]+$/, "")
+          const newTab: Tab = {
+            id: String(tabCounter),
+            name: nameWithoutExt,
+            content: "",
+            isModified: false,
+            language: detectLanguageFromExtension(entry.name),
+            folderId: parentFolderId,
+            source: "filesystem",
+            relativePath: entry.relativePath,
+            contentLoaded: false,
+          }
+          fileHandleMapRef.current.set(newTab.id, entry.handle as FileSystemFileHandle)
+          newTabs.push(newTab)
+        }
+      }
+
+      setFolders(prev => [...prev, ...newFolders])
+      setTabs(prev => [...prev, ...newTabs])
+      setSidebarOpen(true)
+    } catch (e) {
+      console.error("Failed to open folder:", e)
+    }
+  }, [])
+
+  const loadFileContent = useCallback(async (tabId: string) => {
+    const handle = fileHandleMapRef.current.get(tabId)
+    if (!handle) return
+    try {
+      const content = await readFileFromHandle(handle)
+      setTabs(prev => prev.map(tab =>
+        tab.id === tabId ? { ...tab, content, contentLoaded: true, isModified: false } : tab
+      ))
+    } catch (e) {
+      console.error("Failed to read file:", e)
+    }
+  }, [])
+
+  const saveFile = useCallback(async () => {
+    const activeTab = tabs.find(t => t.id === activeTabId)
+    if (!activeTab) return
+
+    if (activeTab.source === "filesystem") {
+      const handle = fileHandleMapRef.current.get(activeTab.id)
+      if (handle) {
+        setSaveStatus("saving")
+        try {
+          await writeFileToHandle(handle, activeTab.content)
+          setTabs(prev => prev.map(tab =>
+            tab.id === activeTabId ? { ...tab, isModified: false } : tab
+          ))
+          setSaveStatus("saved")
+          setTimeout(() => setSaveStatus(null), 2000)
+        } catch (e) {
+          console.error("Failed to save to disk:", e)
+          setSaveStatus(null)
+        }
+        return
+      }
+    }
+    // Fallback to localStorage
+    saveToLocalStorage()
+  }, [tabs, activeTabId, saveToLocalStorage])
+
   // Effects
   useEffect(() => {
     const savedTabs = localStorage.getItem("notepad-tabs")
@@ -626,6 +786,42 @@ export function Notepad() {
     setTimeout(() => textareaRef.current?.focus(), 0)
   }, [])
 
+  // Launch Queue - handle "Open with EDTR" from OS
+  useEffect(() => {
+    if (!window.launchQueue) return
+    window.launchQueue.setConsumer(async (launchParams) => {
+      if (!launchParams.files?.length) return
+      const newTabs: Tab[] = []
+      for (const handle of launchParams.files) {
+        try {
+          const file = await handle.getFile()
+          const content = await file.text()
+          const lang = detectLanguageFromExtension(file.name)
+          const nameWithoutExt = file.name.replace(/\.[^.]+$/, "")
+          tabCounter++
+          const newTab: Tab = {
+            id: String(tabCounter),
+            name: nameWithoutExt,
+            content,
+            isModified: false,
+            language: lang,
+            source: "filesystem",
+            contentLoaded: true,
+          }
+          fileHandleMapRef.current.set(newTab.id, handle)
+          newTabs.push(newTab)
+        } catch (e) {
+          console.error("Failed to open launched file:", e)
+        }
+      }
+      if (newTabs.length > 0) {
+        setTabs(prev => [...prev, ...newTabs])
+        setActiveTabId(newTabs[newTabs.length - 1].id)
+        setSidebarOpen(true)
+      }
+    })
+  }, [])
+
   useEffect(() => {
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null
@@ -636,11 +832,25 @@ export function Notepad() {
     if (savedStatusBarColor) setStatusBarColor(savedStatusBarColor)
   }, [updateTheme])
 
+  // Sync PWA title bar (theme-color) with status bar color
+  useEffect(() => {
+    const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+    const color = statusBarColor || (theme === "dark" ? "#000000" : "#ffffff")
+    metas.forEach(meta => { meta.content = color })
+    // Also create one if none exist (fallback)
+    if (metas.length === 0) {
+      const meta = document.createElement("meta")
+      meta.name = "theme-color"
+      meta.content = color
+      document.head.appendChild(meta)
+    }
+  }, [statusBarColor, theme])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isCmd = e.ctrlKey || e.metaKey
       if (isCmd && e.shiftKey && e.key === "s") { e.preventDefault(); downloadFile(); return }
-      if (isCmd && e.key === "s") { e.preventDefault(); saveToLocalStorage() }
+      if (isCmd && e.key === "s") { e.preventDefault(); saveFile() }
       if (isCmd && e.key === "j") { e.preventDefault(); createNewTab() }
       if (isCmd && e.key === "k") { e.preventDefault(); if (activeTabId) closeTab(activeTabId, e) }
       if (isCmd && e.key === "l") { e.preventDefault(); setSidebarOpen(prev => !prev) }
@@ -648,7 +858,7 @@ export function Notepad() {
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [saveToLocalStorage, createNewTab, formatCode, activeTabId, closeTab, downloadFile])
+  }, [saveFile, createNewTab, formatCode, activeTabId, closeTab, downloadFile])
 
   useEffect(() => {
     const handleClick = () => {
@@ -661,9 +871,9 @@ export function Notepad() {
 
   useEffect(() => {
     if (!tabs.some(tab => tab.isModified)) return
-    const timer = setTimeout(() => saveToLocalStorage(), 5000)
+    const timer = setTimeout(() => saveFile(), 5000)
     return () => clearTimeout(timer)
-  }, [tabs, saveToLocalStorage])
+  }, [tabs, saveFile])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const activeTab = tabs.find(t => t.id === activeTabId)
@@ -704,6 +914,13 @@ export function Notepad() {
   }, [tabs, activeTabId, updateContent, getCommentSyntax])
 
   const activeTab = tabs.find(t => t.id === activeTabId)
+
+  // Lazy-load filesystem file content when tab becomes active
+  useEffect(() => {
+    if (activeTab && activeTab.source === "filesystem" && activeTab.contentLoaded === false) {
+      loadFileContent(activeTab.id)
+    }
+  }, [activeTabId, activeTab?.contentLoaded, loadFileContent])
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -762,6 +979,9 @@ export function Notepad() {
                 draggedFolder={draggedFolder}
                 dragOverFolder={dragOverFolder}
                 dragOverTab={dragOverTab}
+                onOpenFile={openFileFromDisk}
+                onOpenFolder={openFolderFromDisk}
+                supportsDirectoryPicker={supportsFileSystemAccess()}
               />
             </div>
             <div
@@ -820,7 +1040,8 @@ export function Notepad() {
         languages={LANGUAGES}
         changeLanguage={changeLanguage}
         languageMenuRef={languageMenuRef}
-        saveToLocalStorage={saveToLocalStorage}
+        save={saveFile}
+        isFileSystemTab={activeTab?.source === "filesystem"}
         downloadFile={downloadFile}
         handlePrint={handlePrint}
         toggleTheme={toggleTheme}
