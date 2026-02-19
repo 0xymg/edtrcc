@@ -11,6 +11,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.1(react@19.2.0))
+      '@hugerte/hugerte-react':
+        specifier: ^2.0.2
+        version: 2.0.2(hugerte@1.0.10)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@radix-ui/react-accordion':
         specifier: 1.2.2
         version: 1.2.2(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -116,6 +119,9 @@ importers:
       highlight.js:
         specifier: 11.11.1
         version: 11.11.1
+      hugerte:
+        specifier: ^1.0.10
+        version: 1.0.10
       input-otp:
         specifier: 1.4.1
         version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -237,6 +243,21 @@ packages:
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
     peerDependencies:
       react-hook-form: ^7.0.0
+
+  '@hugerte/framework-integration-shared@1.2.0':
+    resolution: {integrity: sha512-ogcvVO0dFcb/HQAY7itj8xnmeMcHZmtMaOj9uC34ZYopnvj12TGWnfRQwbt8jZMlmoZk2z1TTLmJgvQBuH013A==}
+    peerDependencies:
+      hugerte: ^1.0.4
+
+  '@hugerte/hugerte-react@2.0.2':
+    resolution: {integrity: sha512-vIVEX2mpxX/Vl9pvzhOd4bKEktS2sSOrd8smS6lIqgqETsuWTfLbjvXWni99i2a+VEMfWvK+nLqP8AmYhcELBQ==}
+    peerDependencies:
+      hugerte: ^1.0.6
+      react: ^19.0.0 || ^18.0.0 || ^17.0.1 || ^16.7.0
+      react-dom: ^19.0.0 || ^18.0.0 || ^17.0.1 || ^16.7.0
+    peerDependenciesMeta:
+      hugerte:
+        optional: true
 
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
@@ -2078,6 +2099,9 @@ packages:
     resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
+  hugerte@1.0.10:
+    resolution: {integrity: sha512-Uk7drnB4mqJUuXCtgDLDmBNSHNp7CH5juM3MGXE8HVJZwySW77xcdRaPss23vzneXY+dDoRABQcuFsBoa6s4CQ==}
+
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
 
@@ -2536,6 +2560,18 @@ snapshots:
   '@hookform/resolvers@3.10.0(react-hook-form@7.71.1(react@19.2.0))':
     dependencies:
       react-hook-form: 7.71.1(react@19.2.0)
+
+  '@hugerte/framework-integration-shared@1.2.0(hugerte@1.0.10)':
+    dependencies:
+      hugerte: 1.0.10
+
+  '@hugerte/hugerte-react@2.0.2(hugerte@1.0.10)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@hugerte/framework-integration-shared': 1.2.0(hugerte@1.0.10)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+    optionalDependencies:
+      hugerte: 1.0.10
 
   '@img/colour@1.0.0':
     optional: true
@@ -4349,6 +4385,8 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   highlight.js@11.11.1: {}
+
+  hugerte@1.0.10: {}
 
   immediate@3.0.6: {}
 
