@@ -2,6 +2,7 @@
 
 import React from "react"
 import { useState, useCallback, useEffect, useRef } from "react"
+import { nanoid } from "nanoid"
 import { cn } from "@/lib/utils"
 import hljs from "highlight.js/lib/core"
 import javascript from "highlight.js/lib/languages/javascript"
@@ -125,13 +126,12 @@ function getFilename(tab: Tab): string {
   return tab.name.includes(".") ? tab.name : `${tab.name}.${ext}`
 }
 
-let tabCounter = 1
-let folderCounter = 0
+const uid = () => nanoid(8)
 
 export function Notepad() {
   // State
   const [tabs, setTabs] = useState<Tab[]>([
-    { id: "1", name: "Untitled-1", content: "", isModified: false, language: "plaintext" }
+    { id: "1", name: "e-1", content: "", isModified: false, language: "plaintext" }
   ])
   const [activeTabId, setActiveTabId] = useState<string | null>("1")
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
@@ -164,10 +164,10 @@ export function Notepad() {
 
   // Actions
   const createNewTab = useCallback(() => {
-    tabCounter++
+    const id = uid()
     const newTab: Tab = {
-      id: String(tabCounter),
-      name: `Untitled-${tabCounter}`,
+      id,
+      name: `e-${id}`,
       content: "",
       isModified: false,
       language: "plaintext"
@@ -239,7 +239,7 @@ export function Notepad() {
       let newName = tab.name
       // Skip auto-rename for filesystem files
       if (!tab.source || tab.source === "memory") {
-        if (tab.name.startsWith("Untitled-") && content.trim()) {
+        if (tab.name.startsWith("e-") && content.trim()) {
           const hasWordBreak = /[\s\n\r]/.test(content)
           if (hasWordBreak) {
             const firstWord = content.trim().split(/[\s\n\r]+/)[0]
@@ -289,10 +289,10 @@ export function Notepad() {
   }, [finishRenaming])
 
   const createNewFolder = useCallback(() => {
-    folderCounter++
+    const id = uid()
     const newFolder: FolderItem = {
-      id: `folder-${folderCounter}`,
-      name: `New Folder`,
+      id: `f-${id}`,
+      name: `f-${id}`,
       isExpanded: true
     }
     setFolders(prev => [...prev, newFolder])
@@ -631,9 +631,9 @@ export function Notepad() {
         const content = await file.text()
         const lang = detectLanguageFromExtension(file.name)
         const nameWithoutExt = file.name.replace(/\.[^.]+$/, "")
-        tabCounter++
+        const tabId = uid()
         const newTab: Tab = {
-          id: String(tabCounter),
+          id: tabId,
           name: nameWithoutExt,
           content,
           isModified: false,
@@ -642,7 +642,7 @@ export function Notepad() {
           contentLoaded: true,
         }
         if (handle) {
-          fileHandleMapRef.current.set(newTab.id, handle)
+          fileHandleMapRef.current.set(tabId, handle)
         }
         newTabs.push(newTab)
       }
@@ -662,8 +662,7 @@ export function Notepad() {
       if (!result) return
       const { dirHandle, entries } = result
 
-      folderCounter++
-      const folderId = `folder-${folderCounter}`
+      const folderId = `f-${uid()}`
       const newFolder: FolderItem = {
         id: folderId,
         name: dirHandle.name,
@@ -679,8 +678,7 @@ export function Notepad() {
 
       for (const entry of entries) {
         if (entry.kind === "directory") {
-          folderCounter++
-          const subFolderId = `folder-${folderCounter}`
+          const subFolderId = `f-${uid()}`
           subfolderMap.set(entry.relativePath, subFolderId)
           // Determine parent: if path has "/" parent is that folder, else it's the root folder
           const dirParentPath = entry.relativePath.includes("/")
@@ -696,7 +694,7 @@ export function Notepad() {
           })
           dirHandleMapRef.current.set(subFolderId, entry.handle as FileSystemDirectoryHandle)
         } else {
-          tabCounter++
+          const tabId = uid()
           // Determine parent folder
           const parentPath = entry.relativePath.includes("/")
             ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf("/"))
@@ -705,7 +703,7 @@ export function Notepad() {
 
           const nameWithoutExt = entry.name.replace(/\.[^.]+$/, "")
           const newTab: Tab = {
-            id: String(tabCounter),
+            id: tabId,
             name: nameWithoutExt,
             content: "",
             isModified: false,
@@ -715,7 +713,7 @@ export function Notepad() {
             relativePath: entry.relativePath,
             contentLoaded: false,
           }
-          fileHandleMapRef.current.set(newTab.id, entry.handle as FileSystemFileHandle)
+          fileHandleMapRef.current.set(tabId, entry.handle as FileSystemFileHandle)
           newTabs.push(newTab)
         }
       }
@@ -805,9 +803,9 @@ export function Notepad() {
           const content = await file.text()
           const lang = detectLanguageFromExtension(file.name)
           const nameWithoutExt = file.name.replace(/\.[^.]+$/, "")
-          tabCounter++
+          const tabId = uid()
           const newTab: Tab = {
-            id: String(tabCounter),
+            id: tabId,
             name: nameWithoutExt,
             content,
             isModified: false,
@@ -815,7 +813,7 @@ export function Notepad() {
             source: "filesystem",
             contentLoaded: true,
           }
-          fileHandleMapRef.current.set(newTab.id, handle)
+          fileHandleMapRef.current.set(tabId, handle)
           newTabs.push(newTab)
         } catch (e) {
           console.error("Failed to open launched file:", e)

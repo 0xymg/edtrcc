@@ -1,4 +1,4 @@
-# EDTR.CC 🚀
+# EDTR.CC 
 
 **The legendary efficiency of Notepad++, available in your browser.**
 
@@ -36,10 +36,10 @@ EDTR is **100% open source** and community-driven. We welcome all contributions 
 > [!IMPORTANT]
 > To maintain the performance profile, please avoid adding large external dependencies unless absolutely necessary.
 
-## 👨‍💻 Built by
-Created and maintained by [0xymg](https://github.com/0xymg) for [YMG.DIGITAL](https://ymg.digital).
+## Built by
+Created and maintained by [0xymg](https://github.com/0xymg).
 
-## 📄 License
+## License
 MIT License - feel free to use and build upon this utility.
 
 ---
